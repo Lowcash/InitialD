@@ -1,0 +1,650 @@
+{
+	"textures": [
+		{
+			"image": "vehicle_atlas_mapping.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 148,
+				"h": 148
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "vehicle_180_sx/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_180_sx/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 38,
+						"y": 1,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_180_sx/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 75,
+						"y": 1,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_ae_86_levin/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 112,
+						"y": 1,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_ae_86_levin/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 1,
+						"y": 19,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_ae_86_levin/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 38,
+						"y": 19,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_ae_86_trueno/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 75,
+						"y": 19,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_ae_86_trueno/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 112,
+						"y": 19,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_ae_86_trueno/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 1,
+						"y": 37,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_civic/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 38,
+						"y": 37,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_civic/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 75,
+						"y": 37,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_civic/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 112,
+						"y": 37,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_evo_3/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 1,
+						"y": 55,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_evo_3/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 1,
+						"y": 73,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_evo_3/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 1,
+						"y": 91,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_evo_4/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 1,
+						"y": 109,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_evo_4/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 1,
+						"y": 127,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_evo_4/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 38,
+						"y": 55,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_r_32/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 75,
+						"y": 55,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_r_32/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 112,
+						"y": 55,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_r_32/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 38,
+						"y": 73,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_rx_7_fc/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 75,
+						"y": 73,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_rx_7_fc/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 112,
+						"y": 73,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_rx_7_fc/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 38,
+						"y": 91,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_rx_7_fd/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 38,
+						"y": 109,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_rx_7_fd/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 38,
+						"y": 127,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_rx_7_fd/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 75,
+						"y": 91,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_s_13/front",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 112,
+						"y": 91,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_s_13/left",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 75,
+						"y": 109,
+						"w": 35,
+						"h": 16
+					}
+				},
+				{
+					"filename": "vehicle_s_13/right",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 35,
+						"h": 16
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 35,
+						"h": 16
+					},
+					"frame": {
+						"x": 112,
+						"y": 109,
+						"w": 35,
+						"h": 16
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:5bed66fd1e70ac557462d55b770a14b1:93f1ad03a43d5f130a4d3894659635a2:73f2779e90d5ce501176caad36911425$"
+	}
+}
