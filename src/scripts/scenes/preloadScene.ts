@@ -4,7 +4,16 @@ export default class PreloadScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image('image_logo', 'assets/img/logo.png');
+    this.load.image('image_city', 'assets/img/city.jpg');
 
+    this.load.atlas('atlas_vehicles', 'assets/img/vehicle_atlas_mapping.png', 'assets/img/vehicle_atlas_mapping.json');
+
+    this.load.image('image_road_straight', 'assets/img/road_straight.png');
+    this.load.image('image_road_down_0', 'assets/img/road_down_0.png');
+    this.load.image('image_road_down_1', 'assets/img/road_down_1.png');
+    this.load.image('image_road_up_0', 'assets/img/road_up_0.png');
+    this.load.image('image_road_up_1', 'assets/img/road_up_1.png');
   }
 
   create() {
