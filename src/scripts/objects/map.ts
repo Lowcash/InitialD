@@ -1,84 +1,86 @@
-enum Direction {
-    None = -1, Up = 0, Down, Left, Right
+export enum ChunkType {
+    ROAD_STRAIGHT = 0
 };
 
-export enum RoadLane { 
-    Left = 0, Right 
+class LaneProperties {
+    id: number;
+
+    position: number;
+    perspectiveScale: number; 
+
+    constructor(id: number, position: number, perspectiveScale: number) {
+        this.id = id;
+
+        this.position = position;
+        this.perspectiveScale = perspectiveScale;
+    }
 };
 
-export enum ChunkMapping {
-    RoadStraight = 0, RoadDown0, RoadDown1, RoadUp0, RoadUp1 
-};
-
-class ChunkProperties {
-    key: string;
-    mappingKey: ChunkMapping;
+class RoadChunkProperties {
+    mappingKey: string;
+    type: ChunkType;
 
     width: number;
     height: number;
 
-    level: number;
-    direction: Direction;
-    possibleNext: ChunkMapping[];
+    lanes: LaneProperties[];
 
-    constructor(key: string, mappingKey: ChunkMapping, width: number, height: number, direction: Direction, level: number, possibleNext: ChunkMapping[]) {
-        this.key = key;
+    possibleNextType: ChunkType[];
+
+    constructor(mappingKey: string, type: ChunkType, width: number, height: number, lanes: LaneProperties[], possibleNextType: ChunkType[]) {
         this.mappingKey = mappingKey;
+        this.type = type;
 
         this.width = width;
         this.height = height;
 
-        this.direction = direction;
-        this.level = level;
-        this.possibleNext = possibleNext;
+        this.lanes = lanes;
+
+        this.possibleNextType = possibleNextType;
     } 
 };
 
-const chunks: Array<ChunkProperties> = [
-    new ChunkProperties('image_road_straight', ChunkMapping.RoadStraight, 35, 12, Direction.None, 0, [
-        ChunkMapping.RoadStraight, ChunkMapping.RoadStraight, ChunkMapping.RoadStraight,
-        ChunkMapping.RoadUp0, ChunkMapping.RoadDown0
-    ] 
-     ),
-    new ChunkProperties('image_road_down_2', ChunkMapping.RoadDown0, 36, 12, Direction.Down, 1.5, [
-        ChunkMapping.RoadDown0, ChunkMapping.RoadDown0, ChunkMapping.RoadDown0,
-        ChunkMapping.RoadStraight, ChunkMapping.RoadDown1
-    ]),
-    new ChunkProperties('image_road_down_1', ChunkMapping.RoadDown1, 35, 12, Direction.Down, 2, [
-        ChunkMapping.RoadDown1, ChunkMapping.RoadDown1, ChunkMapping.RoadDown1,
-        ChunkMapping.RoadDown0
-    ]),
-    new ChunkProperties('image_road_up_0', ChunkMapping.RoadUp0, 35, 12, Direction.Up, 1, [
-        ChunkMapping.RoadUp0, ChunkMapping.RoadUp0, ChunkMapping.RoadUp0,
-        ChunkMapping.RoadUp1, ChunkMapping.RoadStraight
-    ]),
-    new ChunkProperties('image_road_up_1', ChunkMapping.RoadUp1, 35, 12, Direction.Up, 2, [
-        ChunkMapping.RoadUp1, ChunkMapping.RoadUp1, ChunkMapping.RoadUp1, 
-        ChunkMapping.RoadUp0
-    ])
+const roadChunks: Array<RoadChunkProperties> = [
+    new RoadChunkProperties(
+        'image_road_straight', 
+        ChunkType.ROAD_STRAIGHT, 
+        36, 
+        12, 
+        [
+            new LaneProperties(0, 0, 1.00),
+            new LaneProperties(1, 10, 0.93),
+            new LaneProperties(2, 19, 0.86),
+            new LaneProperties(3, 28, 0.79)
+        ], 
+        [
+            ChunkType.ROAD_STRAIGHT, ChunkType.ROAD_STRAIGHT, ChunkType.ROAD_STRAIGHT
+        ]
+    )
 ];
 
 export class Map {
     private readonly scene: Phaser.Scene;
     private readonly scale: number;
 
-    private roadChunks: Array<Phaser.GameObjects.Image> = [];
-    private roadChunksType: Array<ChunkMapping> = [];
+    chunks: Array<Phaser.GameObjects.Image> = [];
+    chunksProperties: Array<RoadChunkProperties> = [];
 
-    private roadGroup?: Phaser.Physics.Arcade.Group;
+    group?: Phaser.Physics.Arcade.Group;
 
-    private mapStartY: number = 0;
-    private readonly heightLevel: number = 0
+    private mapXOffset: number;
+    private mapYOffset: number;
 
-    constructor(scene: Phaser.Scene, chunkScale: number = 5, mapStartX: number, mapStartY) {
+    constructor(scene: Phaser.Scene, mapStartX: number, mapStartY, chunkScale: number = 5, numChunkToGenerate: number = 10) {
         this.scene = scene;
         this.scale = chunkScale;
-        this.mapStartY = mapStartY;
 
-        for (let i = 0; i < 10; ++i) {
-            this.heightLevel = i + i * 0.5;
+        this.mapXOffset = mapStartX;
+        this.mapYOffset = mapStartY;
+        
+        for (let i = 0; i < numChunkToGenerate; ++i) {
+            this.mapXOffset = i * roadChunks[ChunkType.ROAD_STRAIGHT].width * this.scale;
 
-            this.addChunk(chunks[ChunkMapping.RoadDown0], this.scale, this.heightLevel);
+            this.appendChunk(roadChunks[ChunkType.ROAD_STRAIGHT], this.scale, this.mapXOffset, this.mapYOffset);
         }
 
         this.registerChunks();
@@ -87,58 +89,67 @@ export class Map {
     }
     
     moveMap(speed: number) {
-        this.roadGroup?.incXY(speed, speed * 0.5);
+        this.group?.incX(speed);
 
-        if(this.roadChunks[0].x < 0) {
-            this.removeChunk();
+        if(this.chunks[0].x <= this.chunks[0].width * this.scale * - 1) {
+            this.shiftChunk();
 
-            this.addChunk(chunks[ChunkMapping.RoadDown0], this.scale, this.heightLevel);
+            this.appendChunk(roadChunks[ChunkType.ROAD_STRAIGHT], this.scale, this.mapXOffset, this.mapYOffset);
 
             this.registerChunks();
         }
     }
 
-    private removeChunk() {
-        this.roadChunksType.shift();
+    private shiftChunk() {
+        this.chunksProperties.shift();
 
-        const firstRoadChunk = this.roadChunks.shift() as Phaser.GameObjects.Image;
+        const firstRoadChunk = this.chunks.shift() as Phaser.GameObjects.Image;
 
-        this.roadGroup?.remove(firstRoadChunk);
+        this.group?.remove(firstRoadChunk);
 
         firstRoadChunk.destroy();
     }
 
-    private addChunk(chunk: ChunkProperties, scale: number, heightLevel: number = 1) {
-        this.roadChunks.push(
+    private appendChunk(chunk: RoadChunkProperties, scale: number, positionX: number, positionY: number = 1) {
+        this.chunks.push(
             this.scene.add.image(
-                this.roadChunks.length * chunk.width * scale, 
-                this.mapStartY + chunk.height * scale * heightLevel, 
-                chunk.key)
+                positionX, 
+                positionY, 
+                chunk.mappingKey)
                     .setScale(scale)
                     .setOrigin(0)
         );
         
-        this.roadChunksType.push(chunk.mappingKey);
+        this.chunksProperties.push(chunk);
     }
 
     private registerChunks() {
-        this.roadGroup = this.scene.physics.add.group(this.roadChunks);
+        this.group = this.scene.physics.add.group(this.chunks);
     }
 
-    private getRandomChunk(): ChunkProperties {
-        const lastChunkType: ChunkMapping = this.roadChunksType[this.roadChunksType.length - 1];
-        
-        const possibleChunkTypes: ChunkMapping[] = 
-            chunks[lastChunkType].possibleNext;
-        
-        return chunks[
-            possibleChunkTypes[
-                Phaser.Math.Between(0, possibleChunkTypes.length - 1)
-            ]
-        ];
+    getLanePosition(roadChunkId: number, laneId: number): number {
+        return this.chunks[
+            roadChunkId].getBottomCenter().y - (this.chunksProperties[roadChunkId].lanes[laneId].position * this.scale);
     }
 
-    getActualChunk(): ChunkMapping {
-        return this.roadChunksType[0];
+    getPerspectiveScale(roadChunkId: number, laneId: number): number {
+        return this.chunksProperties[roadChunkId].lanes[laneId].perspectiveScale * this.scale;
     }
+
+    getRoadChunkLanes(roadChunkId: number) {
+        return this.chunksProperties[roadChunkId].lanes.length;
+    }
+
+    // private getRandomChunk(): RoadChunkProperties {
+    //     const lastChunkType: ChunkType = this.roadChunksType[this.roadChunksType.length - 1];
+        
+    //     const possibleChunkTypes: ChunkType[] = 
+    //         chunks[lastChunkType].possibleNextType;
+        
+    //     return chunks[
+    //         possibleChunkTypes[
+    //             Phaser.Math.Between(0, possibleChunkTypes.length - 1)
+    //         ]
+    //     ];
+    // }
 };
