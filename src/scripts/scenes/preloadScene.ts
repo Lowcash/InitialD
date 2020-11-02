@@ -7,9 +7,22 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('image_logo', 'assets/img/logo.png');
     this.load.image('image_city', 'assets/img/city.jpg');
 
-    this.load.atlas('atlas_vehicles', 'assets/img/vehicle_atlas_mapping.png', 'assets/img/vehicle_atlas_mapping.json');
+    this.load.atlas(
+      'atlas_vehicles',
+      'assets/img/vehicle_atlas_mapping.png',
+      'assets/img/vehicle_atlas_mapping.json'
+    );
 
-    this.load.image('image_road_straight', 'assets/img/road_straight.png');
+    this.load.spritesheet(
+      'sprite_explosion',
+      'assets/img/explosion.png',
+      {
+        frameWidth: 64,
+        frameHeight: 64
+      }
+    );
+
+    this.load.image('image_road_straight', 'assets/img/road_straight_1.png');
     this.load.image('image_road_down_0', 'assets/img/road_down_0.png');
   }
 
