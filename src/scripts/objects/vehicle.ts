@@ -1,116 +1,161 @@
-import { ChunkMapping, RoadLane } from './map'
 import Common from './common';
+import { Map } from './map'
+
+enum Direction {
+    FRONT = 'front', LEFT = 'left', RIGHT = 'right'
+}
+
+export enum VehicleType {
+    AE_86_TRUENO = 0, EVO_3, EVO_4
+};
+
+class VehicleProperties {
+    mappingKey: string;
+    type: VehicleType;
+
+    width: number;
+    height: number;
+
+    turningStrength: number;
+
+    constructor(mappingKey: string, type: VehicleType, width: number, height: number, turningStrength: number) {
+        this.mappingKey = mappingKey;
+        this.type = type;
+
+        this.width = width;
+        this.height = height;
+
+        this.turningStrength = turningStrength;
+    } 
+};
+
+export const vehicles: Array<VehicleProperties> = [
+    new VehicleProperties('vehicle_ae_86_trueno', VehicleType.AE_86_TRUENO, 36, 16, 130),
+    new VehicleProperties('vehicle_evo_3', VehicleType.EVO_3, 36, 16, 150),
+    new VehicleProperties('vehicle_evo_4', VehicleType.EVO_4, 36, 16, 170)
+];
 
 export class Vehicle {
     private readonly scene: Phaser.Scene;
-    private readonly emmitter = new Phaser.Events.EventEmitter();
+    private readonly map: Map;
+    //private readonly emmitter = new Phaser.Events.EventEmitter();
 
-    private player?: Phaser.Physics.Arcade.Sprite;
+    private sprite?: Phaser.Physics.Arcade.Sprite;
+    private type: VehicleType;
 
-    private vehicleName: string;
+    private lane: number;
 
-    private roadLane: RoadLane = RoadLane.Right;
     private isTurning: boolean = false;
 
-    constructor(scene: Phaser.Scene, vehicleScale: number = 5, vehicleName: string = 'vehicle_ae_86_trueno', vehicleStartX: number, vehicleStartY?: number) {
+    constructor(scene: Phaser.Scene, map: Map, lane: number = 0, scale: number = 5, type: VehicleType = VehicleType.AE_86_TRUENO) {
         this.scene = scene;
-        this.vehicleName = vehicleName;
+        this.map = map;
 
-        this.player = 
-            this.scene.physics.add.sprite(vehicleStartX, vehicleStartY ?? this.scene.cameras.main.centerY, 'atlas_vehicles')
-                .setScale(vehicleScale)
-                .setOrigin(0);
-        
-        this.createVehicleAnim('front');
-        this.createVehicleAnim('left');
-        this.createVehicleAnim('right');
+        this.lane = lane;
+        this.type = type;
 
-        this.player?.anims.play(`${this.vehicleName}_front`, true);
+        const cachedImage = this.scene.textures.get(vehicles[type].mappingKey).getSourceImage();
 
-        this.scene.events.on('abcd', this.handler);
+        this.sprite = 
+            this.scene.physics.add.sprite(
+                (cachedImage.width / 2) * scale, 
+                this.map.getLanePosition(0, this.lane), 
+                'atlas_vehicles'
+            ).setScale(scale)
+             .setOrigin(0.5, 1.0)
+             .setDepth(4 - this.lane);
+                
+        this.createVehicleAnim(Direction.FRONT.toString());
+        this.createVehicleAnim(Direction.LEFT.toString());
+        this.createVehicleAnim(Direction.RIGHT.toString());
+
+        this.sprite?.anims.play(`${vehicles[this.type].mappingKey}_${Direction.FRONT.toString()}`, true);
+
+        //this.scene.events.on('abcd', this.handler);
     }
 
-    handler(mmm: number) {
-        console.log(mmm);
-        debugger;
-    }
-
-    private handleOnComplete = (time: number) => {
-        console.log('abcd');
-    }
+    // private handler(mmm: number) {
+    //     console.log(mmm);
+    //     debugger;
+    // }
 
     private createVehicleAnim(direction: string) {
         this.scene.anims.create({
-            key: `${this.vehicleName}_${direction}`,
-            frames: [ { key: 'atlas_vehicles', frame: `${this.vehicleName}/${direction}` } ],
+            key: `${vehicles[this.type].mappingKey}_${direction}`,
+            frames: [ { key: 'atlas_vehicles', frame: `${vehicles[this.type].mappingKey}/${direction}` } ],
             frameRate: 0
         });
     }
 
     turnLeft() {
-        if(this.roadLane == RoadLane.Right && !this.isTurning) {
-            this.turn('left', -0.09);
+        if(!this.isTurning && this.lane < 3) {
+            this.turn(Direction.LEFT, -vehicles[this.type].turningStrength);
 
-            this.roadLane = RoadLane.Left;
+            this.isTurning = true;
         }
     }
 
     turnRight() {
-        if(this.roadLane == RoadLane.Left && !this.isTurning) {
-            this.turn('right', 0.09);
+        if(!this.isTurning && this.lane > 0) {
+            this.turn(Direction.RIGHT, vehicles[this.type].turningStrength);
 
-            this.roadLane = RoadLane.Right;
+            this.isTurning = true;
         }
     }
 
-    async turn(direction: string, strength: number): Promise<void> {
-        this.player?.anims.play(`${this.vehicleName}_${direction}`, true);
-
-        for(let i = 0; i < 5; ++i) {
-            this.player?.setScale(this.player.scale + strength);
-            
-            await Common.delay(60, i);
-        }
-
-        this.player?.anims.play(`${this.vehicleName}_front`, true);
+    slowDown(speed: number) {
+        this.sprite?.setVelocityX(speed);
     }
 
-    gasgasgas() {
-        /*this.player?.anims.play(`${this.vehicleName}_front`, true);
+    async turn(direction: Direction, velocity: number): Promise<void> {
+        this.sprite?.anims.play(`${vehicles[this.type].mappingKey}_${direction}`, true);
 
-        this.player?.setVelocityY(0);*/
-    }
-    
-    adjustVehicleByChunk(chunkType: ChunkMapping) {
-        switch(chunkType) {
-            case ChunkMapping.RoadDown0: {
-                this.player?.setAngle(25);
+        this.sprite?.setVelocityY(velocity);
+        
+        if(this.sprite) {
+            switch(direction) {
+                case Direction.LEFT: {
+                    const position: number = this.map.getLanePosition(0, this.lane + 1);
+                    const scale: number = this.map.getPerspectiveScale(0, this.lane + 1);
+                    
+                    for(let i = 0; this.sprite.y > position; ++i) {
+                        this.sprite.setScale((this.sprite.y / position) * scale);
 
-                break;
-            }
-            case ChunkMapping.RoadDown1: {
-                this.player?.setAngle(22.5);
-                this.player
+                        await Common.delay(60, i);
+                    }
+                    
+                    this.sprite.y = position;
 
-                break;
-            }
-            case ChunkMapping.RoadStraight: {
-                this.player?.setAngle(0);
+                    this.lane++;
 
-                break;
-            }
-            case ChunkMapping.RoadUp0: {
-                this.player?.setAngle(-25);
+                    break;
+                }
 
-                break;
-            }
-            case ChunkMapping.RoadUp1: {
-                this.player?.setAngle(-45);
+                case Direction.RIGHT: {
+                    const position: number = this.map.getLanePosition(0, this.lane - 1);
+                    const scale: number = this.map.getPerspectiveScale(0, this.lane - 1);
 
-                break;
+                    for(let i = 0; this.sprite.y < position; ++i) {
+                        this.sprite.setScale((this.sprite.y / position) * scale);
+
+                        await Common.delay(60, i);
+                    }
+
+                    this.sprite.y = position;
+
+                    this.lane--;
+
+                    break;
+                }
             }
         }
 
-        this.player?.setDepth(1);
+        this.sprite?.setVelocityY(0);
+
+        this.sprite?.anims.play(`${vehicles[this.type].mappingKey}_${Direction.FRONT.toString()}`, true);
+
+        this.sprite?.setDepth(this.map.getRoadChunkLanes(0) - this.lane);
+
+        this.isTurning = false;
     }
 };
