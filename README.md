@@ -1,4 +1,4 @@
-<h1 align="center">
+<!-- <h1 align="center">
   <br>
   <a href="https://github.com/yandeu/phaser-project-template#readme"><img src="readme/header.png" alt="header" width="600"></a>
   <br>
@@ -204,4 +204,4 @@ A huge thank you to Rich [@photonstorm](https://github.com/photonstorm) for crea
 
 ## License
 
-The MIT License (MIT) 2019 - [Yannick Deubel](https://github.com/yandeu). Please have a look at the [LICENSE](LICENSE) for more details.
+The MIT License (MIT) 2019 - [Yannick Deubel](https://github.com/yandeu). Please have a look at the [LICENSE](LICENSE) for more details. -->

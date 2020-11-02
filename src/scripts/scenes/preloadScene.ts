@@ -11,10 +11,6 @@ export default class PreloadScene extends Phaser.Scene {
 
     this.load.image('image_road_straight', 'assets/img/road_straight.png');
     this.load.image('image_road_down_0', 'assets/img/road_down_0.png');
-    this.load.image('image_road_down_1', 'assets/img/road_down_1.png');
-    this.load.image('image_road_down_2', 'assets/img/road_down_2.png');
-    this.load.image('image_road_up_0', 'assets/img/road_up_0.png');
-    this.load.image('image_road_up_1', 'assets/img/road_up_1.png');
   }
 
   create() {
