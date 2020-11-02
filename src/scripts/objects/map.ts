@@ -47,10 +47,10 @@ const roadChunks: Array<RoadChunkProperties> = [
         36, 
         12, 
         [
-            new LaneProperties(0, 0, 1.00),
-            new LaneProperties(1, 10, 0.93),
-            new LaneProperties(2, 19, 0.86),
-            new LaneProperties(3, 28, 0.79)
+            new LaneProperties(0, 5, 1.00),
+            new LaneProperties(1, 13, 0.93),
+            new LaneProperties(2, 21, 0.86),
+            new LaneProperties(3, 29, 0.79)
         ], 
         [
             ChunkType.ROAD_STRAIGHT, ChunkType.ROAD_STRAIGHT, ChunkType.ROAD_STRAIGHT
@@ -58,14 +58,22 @@ const roadChunks: Array<RoadChunkProperties> = [
     )
 ];
 
+interface Chunks {
+    images: Array<Phaser.GameObjects.Image>;
+    properties: Array<RoadChunkProperties>;
+    group?: Phaser.Physics.Arcade.Group;
+};
+
 export class Map {
     private readonly scene: Phaser.Scene;
     private readonly scale: number;
+    
+    private road: Chunks = {
+        images: [],
+        properties: []
+    };
 
-    chunks: Array<Phaser.GameObjects.Image> = [];
-    chunksProperties: Array<RoadChunkProperties> = [];
-
-    group?: Phaser.Physics.Arcade.Group;
+    private group?: Phaser.Physics.Arcade.Group;
 
     private mapXOffset: number;
     private mapYOffset: number;
@@ -88,10 +96,10 @@ export class Map {
         //this.scene.events.emit('abcd', 55);
     }
     
-    moveMap(speed: number) {
+    public moveMap(speed: number): void {
         this.group?.incX(speed);
 
-        if(this.chunks[0].x <= this.chunks[0].width * this.scale * - 1) {
+        if(this.road.images[0].x <= this.road.images[0].width * this.scale * - 1) {
             this.shiftChunk();
 
             this.appendChunk(roadChunks[ChunkType.ROAD_STRAIGHT], this.scale, this.mapXOffset, this.mapYOffset);
@@ -100,18 +108,35 @@ export class Map {
         }
     }
 
-    private shiftChunk() {
-        this.chunksProperties.shift();
+    public getRandomRoadIdx(from: number = 0, to?: number): number {
+        return Phaser.Math.Between(from, to ?? this.road.images.length - 1);
+    }
 
-        const firstRoadChunk = this.chunks.shift() as Phaser.GameObjects.Image;
+    public getLanePosition(roadChunkId: number, laneId: number): number {
+        return this.road.images[
+            roadChunkId].getBottomCenter().y - (this.road.properties[roadChunkId].lanes[laneId].position * this.scale);
+    }
+
+    public getPerspectiveScale(roadChunkId: number, laneId: number): number {
+        return this.road.properties[roadChunkId].lanes[laneId].perspectiveScale * this.scale;
+    }
+
+    public getRoadChunkLanes(roadChunkId: number) {
+        return this.road.properties[roadChunkId].lanes.length;
+    }
+
+    private shiftChunk(): void {
+        this.road.properties.shift();
+
+        const firstRoadChunk = this.road.images.shift() as Phaser.GameObjects.Image;
 
         this.group?.remove(firstRoadChunk);
 
         firstRoadChunk.destroy();
     }
 
-    private appendChunk(chunk: RoadChunkProperties, scale: number, positionX: number, positionY: number = 1) {
-        this.chunks.push(
+    private appendChunk(chunk: RoadChunkProperties, scale: number, positionX: number, positionY: number = 1): void {
+        this.road.images.push(
             this.scene.add.image(
                 positionX, 
                 positionY, 
@@ -120,36 +145,10 @@ export class Map {
                     .setOrigin(0)
         );
         
-        this.chunksProperties.push(chunk);
+        this.road.properties.push(chunk);
     }
 
-    private registerChunks() {
-        this.group = this.scene.physics.add.group(this.chunks);
+    private registerChunks() : void{
+        this.group = this.scene.physics.add.group(this.road.images);
     }
-
-    getLanePosition(roadChunkId: number, laneId: number): number {
-        return this.chunks[
-            roadChunkId].getBottomCenter().y - (this.chunksProperties[roadChunkId].lanes[laneId].position * this.scale);
-    }
-
-    getPerspectiveScale(roadChunkId: number, laneId: number): number {
-        return this.chunksProperties[roadChunkId].lanes[laneId].perspectiveScale * this.scale;
-    }
-
-    getRoadChunkLanes(roadChunkId: number) {
-        return this.chunksProperties[roadChunkId].lanes.length;
-    }
-
-    // private getRandomChunk(): RoadChunkProperties {
-    //     const lastChunkType: ChunkType = this.roadChunksType[this.roadChunksType.length - 1];
-        
-    //     const possibleChunkTypes: ChunkType[] = 
-    //         chunks[lastChunkType].possibleNextType;
-        
-    //     return chunks[
-    //         possibleChunkTypes[
-    //             Phaser.Math.Between(0, possibleChunkTypes.length - 1)
-    //         ]
-    //     ];
-    // }
 };
