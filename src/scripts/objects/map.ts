@@ -121,7 +121,11 @@ export class Map {
         return this.road.properties[roadChunkId].lanes[laneId].perspectiveScale * this.scale;
     }
 
-    public getRoadChunkLanes(roadChunkId: number) {
+    public getNumRoadChunks() {
+        return this.road.images.length;
+    }
+
+    public getNumRoadChunkLanes(roadChunkId: number) {
         return this.road.properties[roadChunkId].lanes.length;
     }
 

@@ -6,7 +6,7 @@ enum Direction {
 }
 
 export enum VehicleType {
-    AE_86_TRUENO = 0, EVO_3, EVO_4, _180_SX
+    AE_86_TRUENO = 0, AE_86_LEVIN, EVO_3, EVO_4, _180_SX, CIVIC, R_32, RX_7_FC, RX_7_FD, S_13
 };
 
 class VehicleProperties {
@@ -16,25 +16,39 @@ class VehicleProperties {
     width: number;
     height: number;
 
+    speed: Range;
     turningStrength: number;
 
-    constructor(mappingKey: string, type: VehicleType, width: number, height: number, turningStrength: number) {
+    constructor(mappingKey: string, type: VehicleType, width: number, height: number, speed: Range, turningStrength: number) {
         this.mappingKey = mappingKey;
         this.type = type;
 
         this.width = width;
         this.height = height;
 
+        this.speed = speed;
         this.turningStrength = turningStrength;
     } 
 };
 
 export const vehicles: Array<VehicleProperties> = [
-    new VehicleProperties('vehicle_ae_86_trueno', VehicleType.AE_86_TRUENO, 36, 16, 130),
-    new VehicleProperties('vehicle_evo_3', VehicleType.EVO_3, 36, 16, 150),
-    new VehicleProperties('vehicle_evo_4', VehicleType.EVO_4, 36, 16, 170),
-    new VehicleProperties('vehicle_180_sx', VehicleType._180_SX, 36, 16, 140)
+    new VehicleProperties('ae_86_trueno', VehicleType.AE_86_TRUENO, 36, 16, {from: 200, to: 300}, 130),
+    new VehicleProperties('ae_86_levin', VehicleType.AE_86_LEVIN, 36, 16, {from: 200, to: 300}, 130),
+    new VehicleProperties('evo_3', VehicleType.EVO_3, 36, 16, {from: 300, to: 350}, 150),
+    new VehicleProperties('evo_4', VehicleType.EVO_4, 36, 16, {from: 320, to: 370}, 170),
+    new VehicleProperties('180_sx', VehicleType._180_SX, 36, 16, {from: 250, to: 300},  140),
+    new VehicleProperties('civic', VehicleType.CIVIC, 36, 16, {from: 270, to: 320},  140),
+    new VehicleProperties('r_32', VehicleType.R_32, 36, 16, {from: 300, to: 350},  140),
+    new VehicleProperties('rx_7_fc', VehicleType.RX_7_FC, 36, 16, {from: 280, to: 350},  140),
+    new VehicleProperties('rx_7_fd', VehicleType.RX_7_FD, 36, 16, {from: 290, to: 350},  140),
+    new VehicleProperties('s_13', VehicleType.S_13, 36, 16, {from: 250, to: 300},  140)
 ];
+
+export function getRandomSpeed(vehicle: VehicleProperties): number {
+    return Phaser.Math.Between(
+        vehicle.speed.from, vehicle.speed.to
+    );
+}
 
 export class Vehicle {
     private readonly scene: Phaser.Scene;
@@ -65,11 +79,14 @@ export class Vehicle {
             this.scene.physics.add.sprite(
                 randomIdx * cachedImage.width * scale, 
                 this.map.getLanePosition(0, this.lane), 
-                'atlas_vehicles'
+                'atlas_vehicles',
+                `${vehicles[type].mappingKey}/${Direction.FRONT.toString()}`
             ).setScale(this.map.getPerspectiveScale(randomIdx, this.lane))
              .setOrigin(0.5, 1.0)
-             .setDepth(this.map.getRoadChunkLanes(randomIdx) - this.lane);
-                
+             .setDepth(this.map.getNumRoadChunkLanes(randomIdx) - this.lane);
+        
+        debugger;
+
         this.createVehicleAnim(Direction.FRONT.toString());
         this.createVehicleAnim(Direction.LEFT.toString());
         this.createVehicleAnim(Direction.RIGHT.toString());
@@ -109,7 +126,7 @@ export class Vehicle {
     }
 
     public turnLeft() {
-        if(!this.isTurning && this.lane < this.map.getRoadChunkLanes(0) - 1) {
+        if(!this.isTurning && this.lane < this.map.getNumRoadChunkLanes(0) - 1) {
             this.turn(Direction.LEFT, -vehicles[this.type].turningStrength);
 
             this.lane++;
@@ -128,6 +145,10 @@ export class Vehicle {
         }
     }
 
+    public getIsTurning(): boolean {
+        return this.isTurning;
+    }
+
     public slowDown(speed: number) {
         this.sprite?.setVelocityX(speed);
     }
@@ -135,7 +156,7 @@ export class Vehicle {
     private createVehicleAnim(direction: string) {
         this.scene.anims.create({
             key: `${vehicles[this.type].mappingKey}_${direction}`,
-            frames: [ { key: 'atlas_vehicles', frame: `${vehicles[this.type].mappingKey}/${direction}` } ],
+            frames: [ { key: 'atlas_vehicles', frame: `${vehicles[this.type].mappingKey}/${direction}`,  } ],
             frameRate: 0
         });
     }
@@ -183,7 +204,7 @@ export class Vehicle {
 
         this.sprite?.anims.play(`${vehicles[this.type].mappingKey}_${Direction.FRONT.toString()}`, true);
 
-        this.sprite?.setDepth(this.map.getRoadChunkLanes(0) - this.lane);
+        this.sprite?.setDepth(this.map.getNumRoadChunkLanes(0) - this.lane);
 
         this.isTurning = false;
     }

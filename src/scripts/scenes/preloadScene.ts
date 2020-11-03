@@ -6,6 +6,7 @@ export default class PreloadScene extends Phaser.Scene {
   preload() {
     this.load.image('image_logo', 'assets/img/logo.png');
     this.load.image('image_city', 'assets/img/city.jpg');
+    this.load.image('image_hill', 'assets/img/hills_0.png');
 
     this.load.atlas(
       'atlas_vehicles',
@@ -19,6 +20,15 @@ export default class PreloadScene extends Phaser.Scene {
       {
         frameWidth: 64,
         frameHeight: 64
+      }
+    );
+    
+    this.load.spritesheet(
+      'sprite_coin',
+      'assets/img/coin.png',
+      {
+        frameWidth: 32,
+        frameHeight: 32
       }
     );
 

@@ -1,49 +1,120 @@
-import { Range } from '../objects/common'
+import { Range, isSprite, isTileSprite } from '../objects/common'
+
 import { Map } from '../objects/map'
-import { Vehicle, vehicles, VehicleType } from '../objects/vehicle'
+import { Vehicle, vehicles, VehicleType, getRandomSpeed } from '../objects/vehicle'
+
+interface SpriteMapping {
+  key: string;
+
+  mappingKey: string;
+  sprite?: Phaser.Physics.Arcade.Sprite | Phaser.GameObjects.TileSprite;
+};
 
 export default class MainScene extends Phaser.Scene {
-  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
-
-  private backgroundCity?: Phaser.GameObjects.TileSprite;
-  private explosion: Phaser.Physics.Arcade.Sprite;
-
-  private player: Vehicle;
-  private map: Map;
-  private traffic: Array<Vehicle> = [];
-
-  private readonly chunkSize: number = 36;
   private readonly objectScale: number = 5;
 
-  private readonly emmitter = new Phaser.Events.EventEmitter();
+  //private readonly emmitter = new Phaser.Events.EventEmitter();
 
   private readonly playerVehicle = vehicles[VehicleType.EVO_3];
   private readonly trafficVehicles = [
     vehicles[VehicleType.AE_86_TRUENO],
-    vehicles[VehicleType._180_SX]
+    vehicles[VehicleType._180_SX],
+    vehicles[VehicleType.CIVIC],
+    vehicles[VehicleType.AE_86_LEVIN],
+    vehicles[VehicleType.RX_7_FC],
+    vehicles[VehicleType.RX_7_FD],
+    vehicles[VehicleType.R_32],
+    vehicles[VehicleType.S_13]
   ];
+
+  private readonly city: SpriteMapping = {
+    key: 'city',
+    mappingKey: 'image_city'
+  };
+
+  private readonly hill: SpriteMapping = {
+    key: 'hill',
+    mappingKey: 'image_hill'
+  };
+
+  private readonly explosion: SpriteMapping = {
+    key: 'explosion',
+    mappingKey: 'sprite_explosion'
+  };
+
+  private readonly coin: SpriteMapping = {
+    key: 'coin',
+    mappingKey: 'sprite_coin'
+  };
+
+  private map: Map;
+
+  private player: Vehicle;
+  private traffic: Array<Vehicle> = [];
+
+  private availableLanes: Array<number> = [];
+
+  private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
 
   constructor() {
     super({ key: 'MainScene' });
   }
 
   create() {
-    const mapStartX = 0;
-    const mapStartY = this.cameras.main.height - this.chunkSize * this.objectScale;
-
-    this.backgroundCity = 
+    // -------------------------- Init background -------------------------- //
+    this.city.sprite = 
       this.add.tileSprite(
         this.cameras.main.width * 0.5, 
         this.cameras.main.height * 0.35, 
         0, 
         0, 
-        'image_city'
+        this.city.mappingKey
       ).setScale(1.35);
+    
+    this.hill.sprite = 
+      this.add.tileSprite(
+        this.cameras.main.width * 0.5, 
+        this.cameras.main.height * 0.65, 
+        0, 
+        0, 
+        this.hill.mappingKey
+      ).setScale(1.35);
+    
+    this.add.image(this.cameras.main.width * 0.5, 100, 'image_logo');
+    
+    // ------------------------ Init sprites/anims ------------------------ //
+    this.explosion.sprite = 
+      this.physics.add.sprite(0, 0, this.explosion.mappingKey)
+        .setScale(2.5)
+        .setDepth(5)
+        .setVisible(false);
 
+    this.anims.create({
+        key: this.explosion.key,
+        frames: this.anims.generateFrameNumbers(this.explosion.mappingKey, { }),
+        frameRate: 30,
+        repeat: 0,
+        hideOnComplete: true
+    });
+
+    this.coin.sprite = 
+      this.physics.add.sprite(0, 0, this.explosion.mappingKey)
+        .setScale(2.5)
+        .setDepth(5)
+        .setVisible(false);
+
+    this.anims.create({
+        key: this.coin.key,
+        frames: this.anims.generateFrameNumbers(this.coin.mappingKey, { }),
+        frameRate: 20,
+        repeat: -1
+    });
+
+    // ----------------------------- Init map ----------------------------- //
     this.map = new Map(
       this, 
-      mapStartX, 
-      mapStartY,
+      0, 
+      this.cameras.main.height - this.textures.get('image_road_straight').getSourceImage().height * this.objectScale,
       this.objectScale
     );
 
@@ -59,62 +130,38 @@ export default class MainScene extends Phaser.Scene {
       this.playerVehicle.type
     );
     
-    this.traffic.push(
-      new Vehicle(
-        this, 
-        this.map,
-        6,
-        Phaser.Math.Between(0, this.map.getRoadChunkLanes(0) - 1),
-        this.objectScale,
-        this.trafficVehicles[0].type
-      ), 
-      new Vehicle(
-        this, 
-        this.map,
-        6,
-        Phaser.Math.Between(0, this.map.getRoadChunkLanes(0) - 1),
-        this.objectScale,
-        this.trafficVehicles[1].type
-      )
-    );
-    
-    const position = this.player.getPosition();
+    const generatedRoadChunks = this.map.getNumRoadChunks();
 
-    this.explosion = 
-      this.physics.add.sprite(position.x, position.y, 'sprite_explosion')
-        .setScale(2.5)
-        .setDepth(5)
-        .setVisible(false);
+    const numAvailableLanes = 
+      this.map.getNumRoadChunkLanes(
+      generatedRoadChunks - 1
+      );
 
-    this.anims.create({
-        key: 'explosion',
-        frames: this.anims.generateFrameNumbers('sprite_explosion', { }),
-        frameRate: 30,
-        repeat: 1,
-        hideOnComplete: true
-    });
+    for (let i = 0; i < numAvailableLanes; ++i) {
+      this.availableLanes.push(i);
 
-    //this.add.image(this.cameras.main.width * 0.5, 100, 'image_logo');
+      this.generateTrafficVehicle({from: 5, to: generatedRoadChunks - 1});
+    }
+
+    for (const t of this.traffic) {
+      this.physics.add.overlap(this.player.getSprite(), t.getSprite(), () => {this.handleVehicleCollision(this.player, t)
+      });
+    }
 
     this.cursors = this.input.keyboard.createCursorKeys();
+  }
 
-    this.traffic.forEach(v => {
-      v.slowDown(-350.0);
-    });
+  handleVehicleCollision(player: Vehicle, traffic: Vehicle) {
+    if(!player.getIsTurning() && player.getLane() === traffic.getLane()) {
+      if (this.explosion?.sprite && isSprite(this.explosion.sprite)) {
+        const playerPosition = this.player.getPosition();
 
-    this.traffic.forEach(v => {
-        this.physics.add.overlap(this.player.getSprite(), v.getSprite(), () => {
-          if(this.player.getLane() == v.getLane()) {
-            const playerPosition = this.player.getPosition();
-
-            this.explosion
-            .setPosition(playerPosition.x, playerPosition.y)
-            .setVisible(true);
-
-            this.explosion.anims.play('explosion', true);
-          }
-        });
-    });
+        this.explosion.sprite
+          .setPosition(playerPosition.x, playerPosition.y)
+          .setVisible(true)
+          .anims.play(this.explosion.key, true);
+      }
+    }
   }
 
   update() {
@@ -127,41 +174,53 @@ export default class MainScene extends Phaser.Scene {
 
     this.map.moveMap(-10.0);
 
-    if(this.backgroundCity) {
-      this.backgroundCity.tilePositionX += 0.25;
-    }
+    this.updateBackground();
 
-    this.traffic.forEach((v, idx, obj) => {
-      if(v.getPosition().x < 0) {
-        v.destroy();
+    this.traffic.forEach((t, idx, obj) => {
+      if(t.getPosition().x < -(t.getSprite().width * t.getSprite().scale)) {
+        this.availableLanes.push(t.getLane());
 
+        t.destroy();
+        
         obj.splice(idx, 1);
 
-        const newRndVehicle = new Vehicle(
-          this, 
-          this.map,
-          9,
-          Phaser.Math.Between(0, this.map.getRoadChunkLanes(0) - 1),
-          this.objectScale,
-          Phaser.Math.Between(0, this.trafficVehicles.length - 1)
-        );
-          
-        newRndVehicle.slowDown(-350);
-        
-        this.physics.add.overlap(this.player.getSprite(), newRndVehicle.getSprite(), () => {
-          if(this.player.getLane() == newRndVehicle.getLane()) {
-            const playerPosition = this.player.getPosition();
-
-            this.explosion
-            .setPosition(playerPosition.x, playerPosition.y)
-            .setVisible(true);
-            
-            this.explosion.anims.play('explosion', true);
-          }
-        });
-
-        this.traffic.push(newRndVehicle);
+        this.generateTrafficVehicle({from: 9, to: this.map.getNumRoadChunks() - 1});
       }
     });
+  }
+
+  updateBackground() {
+    if(this.city && isTileSprite(this.city)) {
+      this.city.tilePositionX += 0.25;
+    }
+    if(this.hill && isTileSprite(this.hill)) {
+      this.hill.tilePositionX += 0.5;
+    }
+  }
+
+  generateTrafficVehicle(range: Range) {
+    const vehicleType = this.trafficVehicles[Phaser.Math.Between(0, this.trafficVehicles.length - 1)];
+
+    const availiableLaneIdx = Phaser.Math.Between(0, this.availableLanes.length - 1);
+    const vehicleLane = this.availableLanes[availiableLaneIdx];
+
+    this.availableLanes.splice(availiableLaneIdx, 1);
+
+    const trafficVehicle = new Vehicle(
+      this, 
+      this.map,
+      range,
+      vehicleLane,
+      this.objectScale,
+      vehicleType.type
+    );
+    
+    trafficVehicle.slowDown(-(500 - getRandomSpeed(vehicles[vehicleType.type])));
+    
+    this.physics.add.overlap(this.player.getSprite(), trafficVehicle.getSprite(), () => {
+      this.handleVehicleCollision(this.player, trafficVehicle)
+    });
+
+    this.traffic.push(trafficVehicle);
   }
 }
