@@ -68,9 +68,7 @@ class Coin implements ICollidable {
     }
 };
 
-export default class Reward implements IMovable {
-    private readonly texture: HTMLImageElement | HTMLCanvasElement | Phaser.GameObjects.RenderTexture;
-
+export class Reward implements IMovable {
     private readonly scene: Phaser.Scene;
     private readonly map: Map;
     private readonly player: Vehicle;
@@ -107,8 +105,6 @@ export default class Reward implements IMovable {
         this.depthLayer = depthLayer;
         this.scale = scale;
 
-        this.texture = this.scene.textures.get(this.coin.mappingKey).getSourceImage();
-
         this.scene.anims.create({
             key: this.coin.key,
             frames: this.scene.anims.generateFrameNumbers(this.coin.mappingKey, { }),
@@ -131,7 +127,7 @@ export default class Reward implements IMovable {
             this.map.getRandomRoadIdx(gridPosX.from, gridPosX.to) :
             this.map.getRandomRoadIdx(gridPosX);
         
-        const randomY = this.map.getRandomLaneIdx(0);
+        const randomY = this.map.getRandomLaneIdx(randomX);
 
         this.coin.sprite = 
             this.scene.physics.add.sprite(
@@ -177,9 +173,13 @@ export default class Reward implements IMovable {
     }
 
     private handleCoinCollided(id: string): void {
-        if(this.coins.objectMapper[id]) {
-            if (this.player.getLane() === this.coins.objectMapper[id].getLane()) {
-                this.earnedPoints += this.coins.objectMapper[id].getRewardPoints();
+        const coinObject = this.coins.objectMapper[id];
+
+        if(coinObject) {
+            if (this.player.getLane() === coinObject.getLane()) {
+                this.earnedPoints += coinObject.getRewardPoints();
+                
+                this.scene.events.emit('onScoreChanged', this.earnedPoints, coinObject.getRewardPoints());
 
                 this.coins.objectMapper[id].destroyCoin();
 
@@ -195,5 +195,58 @@ export default class Reward implements IMovable {
         delete this.coins.spriteMapper[id];
 
         this.generateRandomCoins(1, { from: 8, to: this.map.getNumRoadChunks() - 1});
+    }
+};
+
+export class RewardHUD {
+    private readonly scene: Phaser.Scene;
+
+    private readonly scoreLabel: Phaser.GameObjects.BitmapText;
+
+    private readonly fontSize: number;
+    private readonly fontPadding: number;
+
+    constructor(scene: Phaser.Scene, color: number = 0x000000, fontSize: number = 38, fontPadding: number = 50) {
+        this.scene = scene;
+
+        this.fontSize = fontSize;
+        this.fontPadding = fontPadding;
+
+        const graphicsHUD = this.scene.add.graphics();
+        graphicsHUD.fillStyle(color, 1);
+        graphicsHUD.beginPath();
+        graphicsHUD.moveTo(0, 0);
+        graphicsHUD.lineTo(this.scene.game.config.width as number,  0);
+        graphicsHUD.lineTo(this.scene.game.config.width as number, this.fontSize + this.fontPadding);
+        graphicsHUD.lineTo(0, this.fontSize + this.fontPadding);
+        graphicsHUD.lineTo(0, 0);
+        graphicsHUD.closePath();
+        graphicsHUD.fillPath();
+
+        this.scoreLabel = this.scene.add.bitmapText(this.fontPadding, this.fontPadding, 'font', 'SCORE', this.fontSize);
+
+        this.updateScore(0);
+
+        this.scene.events.on('onScoreChanged', (totalScore: number, changedByValue: number) => {
+            this.handleScoreChanged(totalScore);
+        });
+    }
+
+    private fillZeroPadding(number: number, size: number): string {
+        let stringNumber = number.toString();
+
+        while (stringNumber.length < (size || 2)) {
+            stringNumber = "0" + stringNumber;
+        }
+
+        return stringNumber;
+    }
+
+    private handleScoreChanged(totalScore: number): void {
+        this.updateScore(totalScore);
+    }
+
+    private updateScore(score: number) {
+        this.scoreLabel.text = `SCORE ${this.fillZeroPadding(score, 6)}`;
     }
 };

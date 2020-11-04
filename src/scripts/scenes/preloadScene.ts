@@ -34,6 +34,8 @@ export default class PreloadScene extends Phaser.Scene {
 
     this.load.image('image_road_straight', 'assets/img/road_straight_1.png');
     this.load.image('image_road_down_0', 'assets/img/road_down_0.png');
+
+    this.load.bitmapFont('font', 'assets/img/font.png', 'assets/img/font.xml');
   }
 
   create() {

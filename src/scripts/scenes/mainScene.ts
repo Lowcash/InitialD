@@ -3,7 +3,7 @@ import { Range, SpriteMapping, isSprite, isTileSprite } from '../objects/common'
 import { Map } from '../objects/map'
 import { Vehicle, vehicles, VehicleType, getRandomSpeed } from '../objects/vehicle'
 import '../objects/reward'
-import Reward from '../objects/reward';
+import { Reward, RewardHUD } from '../objects/reward';
 
 export default class MainScene extends Phaser.Scene {
   private readonly objectScale: number = 5;
@@ -39,6 +39,7 @@ export default class MainScene extends Phaser.Scene {
 
   private map: Map;
   private rewardModule: Reward;
+  private rewardHUD: RewardHUD;
 
   private player: Vehicle;
   private traffic: Array<Vehicle> = [];
@@ -109,6 +110,7 @@ export default class MainScene extends Phaser.Scene {
     );
     
     this.rewardModule = new Reward(this, this.map, this.player, 5, 1.0, 5);
+    this.rewardHUD = new RewardHUD(this, 0x000000, 38, 30);
 
     const generatedRoadChunks = this.map.getNumRoadChunks();
 
