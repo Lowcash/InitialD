@@ -76,9 +76,12 @@ export class Reward implements IMovable {
     private readonly depthLayer: number;
     private readonly scale: number;
 
-    private readonly coin: SpriteMappingSized = {
+    private readonly coin: {
+        soundKey: string;
+    } & SpriteMappingSized = {
         key: 'coin',
         mappingKey: 'sprite_coin',
+        soundKey: 'sound_coin_earned',
 
         size: 32
     };
@@ -93,6 +96,8 @@ export class Reward implements IMovable {
         spriteMapper: {}
     };
 
+    private readonly coinSound: Phaser.Sound.BaseSound;
+
     private generatedCoins: number = 0;
 
     private earnedPoints: number = 0;
@@ -104,6 +109,8 @@ export class Reward implements IMovable {
 
         this.depthLayer = depthLayer;
         this.scale = scale;
+
+        this.coinSound = this.scene.sound.add(this.coin.soundKey, {} );
 
         this.scene.anims.create({
             key: this.coin.key,
@@ -177,6 +184,8 @@ export class Reward implements IMovable {
 
         if(coinObject) {
             if (this.player.getLane() === coinObject.getLane()) {
+                this.coinSound.play();
+
                 this.earnedPoints += coinObject.getRewardPoints();
                 
                 this.scene.events.emit('onScoreChanged', this.earnedPoints, coinObject.getRewardPoints());
@@ -205,12 +214,14 @@ export class RewardHUD {
 
     private readonly fontSize: number;
     private readonly fontPadding: number;
+    private readonly zeroPadding: number;
 
-    constructor(scene: Phaser.Scene, color: number = 0x000000, fontSize: number = 38, fontPadding: number = 50) {
+    constructor(scene: Phaser.Scene, color: number = 0x000000, fontSize: number = 38, fontPadding: number = 50, zeroPadding: number = 6) {
         this.scene = scene;
 
         this.fontSize = fontSize;
         this.fontPadding = fontPadding;
+        this.zeroPadding = zeroPadding;
 
         const graphicsHUD = this.scene.add.graphics();
         graphicsHUD.fillStyle(color, 1);
@@ -223,9 +234,9 @@ export class RewardHUD {
         graphicsHUD.closePath();
         graphicsHUD.fillPath();
 
-        this.scoreLabel = this.scene.add.bitmapText(this.fontPadding, this.fontPadding, 'font', 'SCORE', this.fontSize);
+        this.scoreLabel = this.scene.add.bitmapText(this.fontPadding, this.fontPadding, 'font', 'NO SCORE', this.fontSize);
 
-        this.updateScore(0);
+        this.updateScore(0, this.zeroPadding);
 
         this.scene.events.on('onScoreChanged', (totalScore: number, changedByValue: number) => {
             this.handleScoreChanged(totalScore);
@@ -243,10 +254,10 @@ export class RewardHUD {
     }
 
     private handleScoreChanged(totalScore: number): void {
-        this.updateScore(totalScore);
+        this.updateScore(totalScore, this.zeroPadding);
     }
 
-    private updateScore(score: number) {
-        this.scoreLabel.text = `SCORE ${this.fillZeroPadding(score, 6)}`;
+    private updateScore(score: number, zeroPadding: number) {
+        this.scoreLabel.text = `SCORE ${this.fillZeroPadding(score, zeroPadding)}`;
     }
 };

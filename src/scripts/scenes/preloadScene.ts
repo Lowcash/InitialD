@@ -36,6 +36,8 @@ export default class PreloadScene extends Phaser.Scene {
     this.load.image('image_road_down_0', 'assets/img/road_down_0.png');
 
     this.load.bitmapFont('font', 'assets/img/font.png', 'assets/img/font.xml');
+
+    this.load.audio('sound_coin_earned', 'assets/img/sfx_coin_double1.wav');
   }
 
   create() {
