@@ -1,0 +1,62 @@
+{
+	"textures": [
+		{
+			"image": "arrows.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 380,
+				"h": 76
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "arrow_valid.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 190,
+						"h": 76
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 190,
+						"h": 76
+					},
+					"frame": {
+						"x": 0,
+						"y": 0,
+						"w": 190,
+						"h": 76
+					}
+				},
+				{
+					"filename": "arrow_invalid.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 190,
+						"h": 76
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 190,
+						"h": 76
+					},
+					"frame": {
+						"x": 190,
+						"y": 0,
+						"w": 190,
+						"h": 76
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:b5eb44dee9685279a2dfde83b5cd3d78:3c5afa6691e324a8e57b8ba8cc82f762:0c8b2eea25d6fa2e4625a992aa216f5f$"
+	}
+}

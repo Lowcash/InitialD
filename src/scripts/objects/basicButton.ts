@@ -1,14 +1,23 @@
 export default class BasicButton extends Phaser.GameObjects.Sprite {
-    private buttonSound?: Phaser.Sound.BaseSound;
+    private readonly buttonSound?: Phaser.Sound.BaseSound;
 
-    constructor(scene: Phaser.Scene, pos: Phaser.Math.Vector2, mappingKey: string, scale: number = 1.0, soundKey?: string ) {
+    constructor(scene: Phaser.Scene, pos: Phaser.Math.Vector2, mappingKey: string, scale?: number, angleRotation?: number, soundKey?: string ) {
         super(scene, pos.x, pos.y, mappingKey);
 
-        this.setScale(scale);
+        if (scale) {
+            this.setScale(scale);
+        }
+        
+        if (angleRotation) {
+            this.setOrigin(0.5, 0.5);
+            this.setAngle(angleRotation);
+        }
 
         if (soundKey) {
             this.buttonSound = scene.sound.add(soundKey, {} );
         }
+
+        this.setInteractive();
 
         scene.add.existing(this);
 
@@ -37,8 +46,6 @@ export default class BasicButton extends Phaser.GameObjects.Sprite {
      }
 
      public playSound(): void {
-         if(this.buttonSound) {
-            this.buttonSound.play();
-         }
+        this.buttonSound?.play();
      }
   }
