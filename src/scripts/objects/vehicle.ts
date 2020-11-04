@@ -1,4 +1,5 @@
-import { Common, Range, isRange } from './common';
+import { Common, Range } from './common';
+import { isRange } from './typeGuardHelper'
 import { Map } from './map'
 
 import IMovable from './IMovable';
@@ -144,7 +145,7 @@ export class Vehicle implements IMovable {
     }
 
     public slowDown(speed: number) {
-        this.sprite?.setVelocityX(-speed);
+        this.sprite?.setVelocityX(-192);
     }
 
     private createVehicleAnim(direction: string) {

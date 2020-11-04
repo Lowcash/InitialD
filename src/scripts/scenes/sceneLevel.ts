@@ -1,11 +1,13 @@
-import { Range, SpriteMapping, isSprite, isTileSprite } from '../objects/common'
+import { Range, SpriteMapping } from '../objects/common'
+
+import { isTileSprite, isSprite } from '../objects/typeGuardHelper'
 
 import { Map } from '../objects/map'
 import { Vehicle, vehicles, VehicleType, getRandomSpeed } from '../objects/vehicle'
 import '../objects/reward'
 import { Reward, RewardHUD } from '../objects/reward';
 
-export default class MainScene extends Phaser.Scene {
+export default class SceneLevel extends Phaser.Scene {
   private readonly objectScale: number = 5;
   
   //private readonly emmitter = new Phaser.Events.EventEmitter();
@@ -49,7 +51,7 @@ export default class MainScene extends Phaser.Scene {
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
 
   constructor() {
-    super({ key: 'MainScene' });
+    super({ key: 'SceneLevel' });
   }
 
   create() {

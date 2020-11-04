@@ -1,4 +1,5 @@
-import { Range, isRange, SpriteMappingSized, Common } from './common';
+import { Range, SpriteMappingSized, Common } from './common';
+import { isRange } from './typeGuardHelper'
 import { Map } from './map'
 import { Vehicle } from './vehicle';
 
@@ -35,8 +36,8 @@ class Coin implements ICollidable {
         this.watchStillAlive();
     }
 
-    public registerCollision(collidingObj: Phaser.Physics.Arcade.Sprite): void {
-        this.scene.physics.add.overlap(this.sprite, collidingObj, () => {
+    public registerCollision(collideWith: Phaser.Physics.Arcade.Sprite): void {
+        this.scene.physics.add.overlap(this.sprite, collideWith, () => {
             this.scene.events.emit('onCoinCollided', this.id );
         });
     }
