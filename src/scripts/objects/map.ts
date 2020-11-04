@@ -92,8 +92,6 @@ export class Map {
         }
 
         this.registerChunks();
-
-        //this.scene.events.emit('abcd', 55);
     }
     
     public moveMap(speed: number): void {
@@ -108,8 +106,16 @@ export class Map {
         }
     }
 
+    public getRandomLaneIdx(roadIdx: number): number {
+        return Phaser.Math.Between(0, this.getNumRoadChunkLanes(roadIdx) - 1);
+    }
+
     public getRandomRoadIdx(from: number = 0, to?: number): number {
         return Phaser.Math.Between(from, to ?? this.road.images.length - 1);
+    }
+
+    public getChunkCenter(chunkIdx): Phaser.Math.Vector2 {
+        return this.road.images[chunkIdx].getCenter();
     }
 
     public getLanePosition(roadChunkId: number, laneId: number): number {
@@ -121,11 +127,11 @@ export class Map {
         return this.road.properties[roadChunkId].lanes[laneId].perspectiveScale * this.scale;
     }
 
-    public getNumRoadChunks() {
+    public getNumRoadChunks(): number {
         return this.road.images.length;
     }
 
-    public getNumRoadChunkLanes(roadChunkId: number) {
+    public getNumRoadChunkLanes(roadChunkId: number): number {
         return this.road.properties[roadChunkId].lanes.length;
     }
 
@@ -152,7 +158,7 @@ export class Map {
         this.road.properties.push(chunk);
     }
 
-    private registerChunks() : void{
+    private registerChunks(): void{
         this.group = this.scene.physics.add.group(this.road.images);
     }
 };

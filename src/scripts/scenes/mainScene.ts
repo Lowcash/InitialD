@@ -1,18 +1,13 @@
-import { Range, isSprite, isTileSprite } from '../objects/common'
+import { Range, SpriteMapping, isSprite, isTileSprite } from '../objects/common'
 
 import { Map } from '../objects/map'
 import { Vehicle, vehicles, VehicleType, getRandomSpeed } from '../objects/vehicle'
-
-interface SpriteMapping {
-  key: string;
-
-  mappingKey: string;
-  sprite?: Phaser.Physics.Arcade.Sprite | Phaser.GameObjects.TileSprite;
-};
+import '../objects/reward'
+import Reward from '../objects/reward';
 
 export default class MainScene extends Phaser.Scene {
   private readonly objectScale: number = 5;
-
+  
   //private readonly emmitter = new Phaser.Events.EventEmitter();
 
   private readonly playerVehicle = vehicles[VehicleType.EVO_3];
@@ -42,12 +37,8 @@ export default class MainScene extends Phaser.Scene {
     mappingKey: 'sprite_explosion'
   };
 
-  private readonly coin: SpriteMapping = {
-    key: 'coin',
-    mappingKey: 'sprite_coin'
-  };
-
   private map: Map;
+  private rewardModule: Reward;
 
   private player: Vehicle;
   private traffic: Array<Vehicle> = [];
@@ -97,19 +88,6 @@ export default class MainScene extends Phaser.Scene {
         hideOnComplete: true
     });
 
-    this.coin.sprite = 
-      this.physics.add.sprite(0, 0, this.explosion.mappingKey)
-        .setScale(2.5)
-        .setDepth(5)
-        .setVisible(false);
-
-    this.anims.create({
-        key: this.coin.key,
-        frames: this.anims.generateFrameNumbers(this.coin.mappingKey, { }),
-        frameRate: 20,
-        repeat: -1
-    });
-
     // ----------------------------- Init map ----------------------------- //
     this.map = new Map(
       this, 
@@ -130,6 +108,8 @@ export default class MainScene extends Phaser.Scene {
       this.playerVehicle.type
     );
     
+    this.rewardModule = new Reward(this, this.map, 5, 1.0, 5);
+
     const generatedRoadChunks = this.map.getNumRoadChunks();
 
     const numAvailableLanes = 
@@ -172,7 +152,10 @@ export default class MainScene extends Phaser.Scene {
       this.player.turnRight();
     }
 
-    this.map.moveMap(-10.0);
+    this.traffic.forEach(t => t.slowDown(5));
+
+    this.map.moveMap(-5.0);
+    this.rewardModule.slowDown(5.0);
 
     this.updateBackground();
 
@@ -214,8 +197,8 @@ export default class MainScene extends Phaser.Scene {
       this.objectScale,
       vehicleType.type
     );
-    
-    trafficVehicle.slowDown(-(500 - getRandomSpeed(vehicles[vehicleType.type])));
+
+    trafficVehicle.slowDown((500 - getRandomSpeed(vehicles[vehicleType.type])));
     
     this.physics.add.overlap(this.player.getSprite(), trafficVehicle.getSprite(), () => {
       this.handleVehicleCollision(this.player, trafficVehicle)

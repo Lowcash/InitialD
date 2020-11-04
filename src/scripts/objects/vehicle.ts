@@ -1,6 +1,8 @@
 import { Common, Range, isRange } from './common';
 import { Map } from './map'
 
+import IMovable from './IMovable';
+
 enum Direction {
     FRONT = 'front', LEFT = 'left', RIGHT = 'right'
 }
@@ -50,10 +52,11 @@ export function getRandomSpeed(vehicle: VehicleProperties): number {
     );
 }
 
-export class Vehicle {
+export class Vehicle implements IMovable {
+    private readonly texture: HTMLImageElement | HTMLCanvasElement | Phaser.GameObjects.RenderTexture;
+
     private readonly scene: Phaser.Scene;
     private readonly map: Map;
-    //private readonly emmitter = new Phaser.Events.EventEmitter();
 
     private sprite: Phaser.Physics.Arcade.Sprite;
     private type: VehicleType;
@@ -69,7 +72,7 @@ export class Vehicle {
         this.lane = startRoadLane;
         this.type = type;
 
-        const cachedImage = this.scene.textures.get(vehicles[type].mappingKey).getSourceImage();
+        this.texture = this.scene.textures.get(vehicles[type].mappingKey).getSourceImage();
 
         const randomIdx = isRange(startChunk) ?
             this.map.getRandomRoadIdx(startChunk.from, startChunk.to) :
@@ -77,7 +80,7 @@ export class Vehicle {
 
         this.sprite = 
             this.scene.physics.add.sprite(
-                randomIdx * cachedImage.width * scale, 
+                randomIdx * this.texture.width * scale, 
                 this.map.getLanePosition(0, this.lane), 
                 'atlas_vehicles',
                 `${vehicles[type].mappingKey}/${Direction.FRONT.toString()}`
@@ -85,21 +88,12 @@ export class Vehicle {
              .setOrigin(0.5, 1.0)
              .setDepth(this.map.getNumRoadChunkLanes(randomIdx) - this.lane);
         
-        debugger;
-
         this.createVehicleAnim(Direction.FRONT.toString());
         this.createVehicleAnim(Direction.LEFT.toString());
         this.createVehicleAnim(Direction.RIGHT.toString());
 
         this.sprite?.anims.play(`${vehicles[this.type].mappingKey}_${Direction.FRONT.toString()}`, true);
-        
-        //this.scene.events.on('abcd', this.handler);
     }
-
-    // private handler(mmm: number) {
-    //     console.log(mmm);
-    //     debugger;
-    // }
 
     public destroy() {
         this.sprite?.destroy();
@@ -127,7 +121,7 @@ export class Vehicle {
 
     public turnLeft() {
         if(!this.isTurning && this.lane < this.map.getNumRoadChunkLanes(0) - 1) {
-            this.turn(Direction.LEFT, -vehicles[this.type].turningStrength);
+            this.turn(Direction.LEFT, vehicles[this.type].turningStrength);
 
             this.lane++;
 
@@ -150,13 +144,13 @@ export class Vehicle {
     }
 
     public slowDown(speed: number) {
-        this.sprite?.setVelocityX(speed);
+        this.sprite?.setVelocityX(-speed);
     }
 
     private createVehicleAnim(direction: string) {
         this.scene.anims.create({
             key: `${vehicles[this.type].mappingKey}_${direction}`,
-            frames: [ { key: 'atlas_vehicles', frame: `${vehicles[this.type].mappingKey}/${direction}`,  } ],
+            frames: [ { key: 'atlas_vehicles', frame: `${vehicles[this.type].mappingKey}/${direction}` } ],
             frameRate: 0
         });
     }
@@ -164,11 +158,11 @@ export class Vehicle {
     private async turn(direction: Direction, velocity: number): Promise<void> {
         this.sprite?.anims.play(`${vehicles[this.type].mappingKey}_${direction}`, true);
 
-        this.sprite?.setVelocityY(velocity);
-        
         if(this.sprite) {
             switch(direction) {
                 case Direction.LEFT: {
+                    this.sprite?.setVelocityY(-velocity);
+
                     const position: number = this.map.getLanePosition(0, this.lane + 1);
                     const scale: number = this.map.getPerspectiveScale(0, this.lane + 1);
                     
@@ -184,6 +178,8 @@ export class Vehicle {
                 }
 
                 case Direction.RIGHT: {
+                    this.sprite?.setVelocityY(velocity);
+
                     const position: number = this.map.getLanePosition(0, this.lane - 1);
                     const scale: number = this.map.getPerspectiveScale(0, this.lane - 1);
 
@@ -200,11 +196,10 @@ export class Vehicle {
             }
         }
 
-        this.sprite?.setVelocityY(0);
-
-        this.sprite?.anims.play(`${vehicles[this.type].mappingKey}_${Direction.FRONT.toString()}`, true);
-
-        this.sprite?.setDepth(this.map.getNumRoadChunkLanes(0) - this.lane);
+        this.sprite
+            .setVelocityY(0)
+            .setDepth(this.map.getNumRoadChunkLanes(0) - this.lane)
+            .anims.play(`${vehicles[this.type].mappingKey}_${Direction.FRONT.toString()}`, true);
 
         this.isTurning = false;
     }

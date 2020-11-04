@@ -24,3 +24,17 @@ export function isSprite(obj: Phaser.Physics.Arcade.Sprite | any): obj is Phaser
 export function isTileSprite(obj: Phaser.GameObjects.TileSprite | any): obj is Phaser.GameObjects.TileSprite {
     return (obj as Phaser.GameObjects.TileSprite) !== undefined;
 }
+
+export interface KeyMapping {
+    key: string;
+
+    mappingKey: string;
+}
+
+export interface SpriteMapping extends KeyMapping {
+    sprite?: Phaser.Physics.Arcade.Sprite | Phaser.GameObjects.TileSprite;
+};
+
+export interface SpriteMappingSized extends SpriteMapping {
+    size: number;
+}
