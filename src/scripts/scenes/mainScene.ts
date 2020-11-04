@@ -108,7 +108,7 @@ export default class MainScene extends Phaser.Scene {
       this.playerVehicle.type
     );
     
-    this.rewardModule = new Reward(this, this.map, 5, 1.0, 5);
+    this.rewardModule = new Reward(this, this.map, this.player, 5, 1.0, 5);
 
     const generatedRoadChunks = this.map.getNumRoadChunks();
 
