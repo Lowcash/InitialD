@@ -92,14 +92,15 @@ export class Reward implements IMovable {
         spriteMapper: { [id: string]: Phaser.Physics.Arcade.Sprite; };
         
         group?: Phaser.Physics.Arcade.Group;
+        sound?: Phaser.Sound.BaseSound;
+
+        numCreatedCoins: number;
     } = {
         objectMapper: {},
-        spriteMapper: {}
+        spriteMapper: {},
+
+        numCreatedCoins: 0
     };
-
-    private readonly coinSound: Phaser.Sound.BaseSound;
-
-    private generatedCoins: number = 0;
 
     private earnedPoints: number = 0;
 
@@ -111,7 +112,7 @@ export class Reward implements IMovable {
         this.depthLayer = depthLayer;
         this.scale = scale;
 
-        this.coinSound = this.scene.sound.add(this.coin.soundKey, {} );
+        this.coins.sound = this.scene.sound.add(this.coin.soundKey, {} );
 
         this.scene.anims.create({
             key: this.coin.key,
@@ -130,7 +131,7 @@ export class Reward implements IMovable {
         });
     }
 
-    public generateCoin(gridPosX: Range | number) {
+    public generateCoin(gridPosX: Range | number): void {
         const randomX = isRange(gridPosX) ?
             this.map.getRandomRoadIdx(gridPosX.from, gridPosX.to) :
             this.map.getRandomRoadIdx(gridPosX);
@@ -140,7 +141,7 @@ export class Reward implements IMovable {
         this.coin.sprite = 
             this.scene.physics.add.sprite(
                 this.map.getChunkCenter(randomX).x, 
-                this.map.getLanePosition(0, randomY),
+                this.map.getLanePosition(randomX, randomY),
                 this.coin.mappingKey
             ).setOrigin(0.5, 1.0)
              .setScale(this.scale)
@@ -148,16 +149,16 @@ export class Reward implements IMovable {
         
         this.coin.sprite?.anims.play(this.coin.key, true);
         
-        this.coins.objectMapper[this.generatedCoins.toString()] =
+        this.coins.objectMapper[this.coins.numCreatedCoins.toString()] =
             new Coin(
                 this.scene, 
-                this.generatedCoins.toString(), 
+                this.coins.numCreatedCoins.toString(), 
                 this.coin.sprite,
                 new Phaser.Math.Vector2(randomX, randomY),
                 [ this.player.getSprite() ] 
-                );
+            );
         
-        this.coins.spriteMapper[this.generatedCoins.toString()] = this.coin.sprite;
+        this.coins.spriteMapper[this.coins.numCreatedCoins.toString()] = this.coin.sprite;
     }
 
     public registerCoins(): void {
@@ -170,7 +171,7 @@ export class Reward implements IMovable {
         for (let i = 0; i < numCoins; ++i) {
             this.generateCoin({ from: range.from, to: range.to });
 
-            this.generatedCoins++;
+            this.coins.numCreatedCoins++;
         }
 
         this.registerCoins();
@@ -185,7 +186,7 @@ export class Reward implements IMovable {
 
         if(coinObject) {
             if (this.player.getLane() === coinObject.getLane()) {
-                this.coinSound.play();
+                this.coins.sound?.play();
 
                 this.earnedPoints += coinObject.getRewardPoints();
                 

@@ -20,29 +20,6 @@ export default class BasicButton extends Phaser.GameObjects.Sprite {
         this.setInteractive();
 
         scene.add.existing(this);
-
-        // //check if config contains a scene
-        // if (!config.scene) {
-        //     console.log('missing scene');
-        //     return;
-        // }
-        // //check if config contains a key
-        // if (!config.key) {
-        //     console.log("missing key!");
-        //     return;
-        // }
-        // //if there is no up property assume 0
-        // if (!config.up) {
-        //     config.up = 0;
-        // }
-        // //if there is no down in config use up
-        // if (!config.down) {
-        //     config.down = config.up;
-        // }
-        // //if there is no over in config use up
-        // if (!config.over) {
-        //     config.over = config.up;
-        // }
      }
 
      public playSound(): void {

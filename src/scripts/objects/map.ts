@@ -153,6 +153,7 @@ export class Map {
                 chunk.mappingKey)
                     .setScale(scale)
                     .setOrigin(0)
+                    .setDepth(0)
         );
         
         this.road.properties.push(chunk);

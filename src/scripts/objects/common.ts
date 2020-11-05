@@ -13,10 +13,12 @@ export type Range = {
     to: number;
 };
 
-export interface KeyMapping {
-    key: string;
-
+export interface Mapping {
     mappingKey: string;
+}
+
+export interface KeyMapping extends Mapping {
+    key: string;
 }
 
 export interface SpriteMapping extends KeyMapping {

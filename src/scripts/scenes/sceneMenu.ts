@@ -11,6 +11,9 @@ export default class SceneMenu extends Phaser.Scene {
   private startButtonScale: number = 1.5;
   private startButtonHoverScale: number = 1.55;
 
+  private controlArrowsScale: number = 1.0;
+  private controlArrowsHoverScale: number = 1.15;
+
   private selectedControls: Controls = Controls.LEFT_RIGHT;
 
   constructor() {
@@ -78,8 +81,8 @@ export default class SceneMenu extends Phaser.Scene {
       }
 
       if (withScale) {
-        this.controlsLRButton.setScale(1.15);
-        this.controlsUDButton.setScale(1.00);
+        this.controlsLRButton.setScale(this.controlArrowsHoverScale);
+        this.controlsUDButton.setScale(this.controlArrowsScale);
       }
       
     } else {
@@ -89,8 +92,8 @@ export default class SceneMenu extends Phaser.Scene {
       }
       
       if (withScale) {
-        this.controlsLRButton.setScale(1.00);
-        this.controlsUDButton.setScale(1.15);
+        this.controlsLRButton.setScale(this.controlArrowsScale);
+        this.controlsUDButton.setScale(this.controlArrowsHoverScale);
       }
     }
   }
