@@ -1,9 +1,15 @@
-import '../objects/basicButton'
+//import '../objects/basicButton'
 import BasicButton from '../objects/basicButton';
+import { PreloadDataModel } from './preloadMenu'
 
 enum Controls { LEFT_RIGHT = 0, UP_DOWN };
 
 export default class SceneMenu extends Phaser.Scene {
+  private inputData: PreloadDataModel;
+  
+  private city?: Phaser.GameObjects.TileSprite;
+  private hill?: Phaser.GameObjects.TileSprite;
+
   private startButton: BasicButton;
   private controlsLRButton: BasicButton;
   private controlsUDButton: BasicButton;
@@ -20,8 +26,30 @@ export default class SceneMenu extends Phaser.Scene {
     super({ key: 'SceneMenu' })
   }
 
+  private init(inputData: PreloadDataModel): void {
+    this.inputData = inputData;
+  }
+
   private create(): void {
-    this.add.image(this.cameras.main.centerX, 100, 'image_logo');
+    this.add.image(this.cameras.main.centerX, 100, this.inputData.imageLogo.mappingKey);
+
+    this.city = 
+      this.add.tileSprite(
+        this.cameras.main.width * 0.5, 
+        this.cameras.main.height * 0.35, 
+        0, 
+        0, 
+        this.inputData.imageCity.mappingKey
+      ).setScale(1.35);
+    
+    this.hill = 
+      this.add.tileSprite(
+        this.cameras.main.width * 0.5, 
+        this.cameras.main.height * 0.65, 
+        0, 
+        0, 
+        this.inputData.imageHill.mappingKey
+      ).setScale(1.35);
 
     this.startButton = new BasicButton(
       this, 
@@ -29,10 +57,10 @@ export default class SceneMenu extends Phaser.Scene {
         this.cameras.main.centerX,
         this.cameras.main.height * 0.4
       ),
-      'sprite_sheet_start',
+      this.inputData.spriteStart.mappingKey,
       this.startButtonScale,
       undefined,
-      'sound_button_pressed'
+      this.inputData.soundButton.mappingKey
     );
     
     this.startButton.on('pointerover', this.handleHoverStartButton, this);
@@ -45,10 +73,10 @@ export default class SceneMenu extends Phaser.Scene {
         this.cameras.main.width * 0.23,
         this.cameras.main.height * 0.66
       ),
-      'sprite_arrows',
+      this.inputData.spriteArrows.mappingKey,
       undefined,
       undefined,
-      'sound_button_pressed'
+      this.inputData.soundButton.mappingKey
     );
 
     this.controlsUDButton = new BasicButton(
@@ -57,10 +85,10 @@ export default class SceneMenu extends Phaser.Scene {
         this.cameras.main.width * 0.76,
         this.cameras.main.height * 0.66
       ),
-      'sprite_arrows',
+      this.inputData.spriteArrows.mappingKey,
       undefined,
       90,
-      'sound_button_pressed'
+      this.inputData.soundButton.mappingKey
     );
     
     this.switchControls(this.selectedControls);
@@ -71,6 +99,19 @@ export default class SceneMenu extends Phaser.Scene {
     this.controlsUDButton.on('pointerout', this.handleEndHoverControlArrows, this);
     this.controlsLRButton.on('pointerdown', this.handlePressedLRControlArrows, this);
     this.controlsUDButton.on('pointerdown', this.handlePressedUDControlArrows, this);
+  }
+
+  public update(): void {
+    this.moveBackground();
+  }
+
+  private moveBackground(): void {
+    if(this.city) {
+      this.city.tilePositionX += 0.25;
+    }
+    if(this.hill) {
+      this.hill.tilePositionX += 0.5;
+    }
   }
 
   private switchControls(controls: Controls, withColor: boolean = true, withScale: boolean = true): void {

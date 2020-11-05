@@ -18,40 +18,38 @@ export enum VehicleType {
     CIVIC = 'civic',
     R_32 = 'r_32',
     RX_7_FC = 'rx_7_fc',
-    RX_7_FD = 'rx_7_fs',
+    RX_7_FD = 'rx_7_fd',
     S_13 = 's_13'
 };
 
 class VehicleProperties {
+    type: VehicleType;
+
     speed: Range;
     turningStrength: number;
 
-    constructor(speed: Range, turningStrength: number) {
+    constructor(type: VehicleType, speed: Range, turningStrength: number) {
+        this.type = type;
+
         this.speed = speed;
         this.turningStrength = turningStrength;
     } 
 };
 
 export const vehicles: { [id: string]: VehicleProperties } = {
-    [VehicleType.AE_86_TRUENO.toString()]: new VehicleProperties({from: 200, to: 300}, 130),
-    [VehicleType.AE_86_LEVIN.toString()]: new VehicleProperties({from: 300, to: 350}, 150),
-    [VehicleType.EVO_3.toString()]: new VehicleProperties({from: 320, to: 370}, 170),
-    [VehicleType.EVO_4.toString()]: new VehicleProperties({from: 250, to: 300},  140),
-    [VehicleType._180_SX.toString()]: new VehicleProperties({from: 270, to: 320},  140),
-    [VehicleType.CIVIC.toString()]: new VehicleProperties({from: 300, to: 350},  140),
-    [VehicleType.R_32.toString()]: new VehicleProperties({from: 280, to: 350},  140),
-    [VehicleType.RX_7_FC.toString()]: new VehicleProperties({from: 280, to: 350},  1400),
-    [VehicleType.RX_7_FD.toString()]: new VehicleProperties({from: 290, to: 350},  140),
-    [VehicleType.S_13.toString()]: new VehicleProperties({from: 250, to: 300},  140)
+    [VehicleType.AE_86_TRUENO.toString()]: new VehicleProperties(VehicleType.AE_86_TRUENO, {from: 1, to: 3}, 130),
+    [VehicleType.AE_86_LEVIN.toString()]: new VehicleProperties(VehicleType.AE_86_LEVIN, {from: 1, to: 3}, 150),
+    [VehicleType.EVO_3.toString()]: new VehicleProperties(VehicleType.EVO_3, {from: 1, to: 4}, 170),
+    [VehicleType.EVO_4.toString()]: new VehicleProperties(VehicleType.EVO_4, {from: 1, to: 3},  140),
+    [VehicleType._180_SX.toString()]: new VehicleProperties(VehicleType._180_SX, {from: 1, to: 3},  140),
+    [VehicleType.CIVIC.toString()]: new VehicleProperties(VehicleType.CIVIC, {from: 1, to: 3},  140),
+    [VehicleType.R_32.toString()]: new VehicleProperties(VehicleType.R_32, {from: 1, to: 4}, 140),
+    [VehicleType.RX_7_FC.toString()]: new VehicleProperties(VehicleType.RX_7_FC, {from: 1, to: 4},  140),
+    [VehicleType.RX_7_FD.toString()]: new VehicleProperties(VehicleType.RX_7_FD, {from: 1, to: 4},  140),
+    [VehicleType.S_13.toString()]: new VehicleProperties(VehicleType.S_13, {from: 1, to: 3},  140)
 };
 
-export function getRandomSpeed(vehicle: VehicleProperties): number {
-    return Phaser.Math.Between(
-        vehicle.speed.from, vehicle.speed.to
-    );
-}
-
-export class Vehicle implements IMovable, ICollidable {
+export class Vehicle implements ICollidable, IMovable {
     private readonly scene: Phaser.Scene;
     private readonly map: Map;
 
@@ -61,14 +59,17 @@ export class Vehicle implements IMovable, ICollidable {
 
     private readonly gridPos: Phaser.Math.Vector2;
 
-    private type: VehicleType;
-    private speed: Range;
-    private turningStrength: number;
+    private mapSpeed: number;
 
+    private type: VehicleType;
+    private turningStrength: number;
+    
     private isAlive: boolean = true;
     private isTurning: boolean = false;
+    
+    speed: number;
 
-    constructor(scene: Phaser.Scene, map: Map, id: string, sprite: Phaser.Physics.Arcade.Sprite, gridPos: Phaser.Math.Vector2, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], type: VehicleType, speed: Range, turningStrength: number) {
+    constructor(scene: Phaser.Scene, map: Map, id: string, sprite: Phaser.Physics.Arcade.Sprite, gridPos: Phaser.Math.Vector2, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], type: VehicleType, speed: number, mapSpeed: number, turningStrength: number) {
         this.scene = scene;
         this.map = map;
 
@@ -81,11 +82,17 @@ export class Vehicle implements IMovable, ICollidable {
         this.speed = speed;
         this.turningStrength = turningStrength;
 
+        this.mapSpeed = mapSpeed;
+
         for (const c of collideWith) {
             this.registerCollision(c);
         }
 
         this.watchStillAlive();
+
+        this.scene.events.on('onMapSpeedChanged', (speed: number) => {
+            this.handleMapSpeedChanged(speed);
+        });
     }
 
     public registerCollision(collideWith: Phaser.Physics.Arcade.Sprite): void {
@@ -112,8 +119,8 @@ export class Vehicle implements IMovable, ICollidable {
         return this.gridPos;
     }
 
-    public slowDown(speed: number): void {
-        this.sprite.setVelocityX(-speed);
+    public move(): void {
+        this.sprite.setPosition(this.sprite.x + this.mapSpeed + this.speed, this.sprite.y);
     }
 
     public turnLeft() {
@@ -185,6 +192,10 @@ export class Vehicle implements IMovable, ICollidable {
         this.isTurning = false;
     }
 
+    private handleMapSpeedChanged(mapSpeed: number) {
+        this.mapSpeed = mapSpeed;
+    }
+
     private async watchStillAlive(): Promise<void> {
         while (this.isAlive) {
             if (this.sprite.x < -this.sprite.width) {
@@ -202,7 +213,9 @@ export class Traffic {
     private readonly scene: Phaser.Scene;
     private readonly map: Map;
 
-    private readonly explosion: SpriteMapping = {
+    private readonly explosion: {
+        sound?: Phaser.Sound.BaseSound;
+    } & SpriteMapping = {
         key: 'explosion',
         mappingKey: 'sprite_explosion'
     };
@@ -221,13 +234,15 @@ export class Traffic {
 
     private player?: Vehicle;
 
+    private availableLanes: Array<number> = [];
+
     constructor(scene: Phaser.Scene, map: Map) {
         this.scene = scene;
         this.map = map;
 
         this.explosion.sprite = 
             this.scene.physics.add.sprite(0, 0, this.explosion.mappingKey)
-                .setScale(2.5)
+                .setScale(6.5)
                 .setDepth(5)
                 .setOrigin(0.5, 0.75)
                 .setVisible(false);
@@ -235,10 +250,17 @@ export class Traffic {
         this.scene.anims.create({
             key: this.explosion.key,
             frames: this.scene.anims.generateFrameNumbers(this.explosion.mappingKey, { }),
-            frameRate: 30,
+            frameRate: 15,
             repeat: 0,
             hideOnComplete: true
         });
+
+        this.explosion.sound = this.scene.sound.add('sound_explosion', {} );
+
+        const numLastChunkLanes = this.map.getNumRoadChunkLanes(this.map.getNumRoadChunks() - 1);
+        for (let i = 0; i < numLastChunkLanes; ++i) {
+            this.availableLanes.push(i);
+        }
 
         for (const v of Object.values(VehicleType)) {
             this.initVehicle(v);
@@ -252,13 +274,20 @@ export class Traffic {
         });
     }
 
-    public generateVehicle(vehicleType: VehicleType, gridPosX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = []): Vehicle {
+    public generateVehicle(vehicleType: VehicleType, gridPosX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], istakeLane: boolean = true): Vehicle {
         const randomX = isRange(gridPosX) ?
             this.map.getRandomRoadIdx(gridPosX.from, gridPosX.to) :
             this.map.getRandomRoadIdx(gridPosX);
         
-        const randomY = this.map.getRandomLaneIdx(randomX);
+        const availableLaneIdx = Phaser.Math.Between(0, this.availableLanes.length - 1);
+        const randomY = this.availableLanes[availableLaneIdx];
 
+        if (istakeLane) {
+            this.availableLanes.splice(availableLaneIdx, 1);
+        }
+        
+        //const randomY = this.map.getRandomLaneIdx(randomX);
+        
         this.vehicles.spriteMapper[this.vehicles.numCreatedVehicles.toString()] = this.scene.physics.add.sprite(
             this.map.getChunkCenter(randomX).x, 
             this.map.getLanePosition(randomX, randomY), 
@@ -277,17 +306,36 @@ export class Traffic {
             new Phaser.Math.Vector2(randomX, randomY),
             collideWith,
             vehicleType,
-            vehicles[vehicleType].speed,
+            Phaser.Math.FloatBetween(vehicles[vehicleType].speed.from, vehicles[vehicleType].speed.to),
+            this.map.getSpeed(),
             vehicles[vehicleType].turningStrength
         );
 
         this.vehicles.objectMapper[this.vehicles.numCreatedVehicles.toString()] = vehicle;
-            
+        
+        this.vehicles.numCreatedVehicles++;
+
         return vehicle;
     }
 
     public attachPlayer(player: Vehicle): void {
         this.player = player;
+    }
+
+    public move(): void {
+        for (const v of Object.keys(this.vehicles.objectMapper).map(c => this.vehicles.objectMapper[c])) {
+            if (v.getSprite().body !== this.player?.getSprite().body) {
+                v.move();
+            } 
+        }
+    }
+
+    public getRandomVehicle():  VehicleProperties {
+        return vehicles[
+            Object.values(VehicleType)[
+                Phaser.Math.Between(0, Object.keys(VehicleType).length - 1)
+            ]
+        ]
     }
 
     private initVehicle(vehicleType: VehicleType): void {
@@ -319,17 +367,13 @@ export class Traffic {
 
                     this.explosion.sprite.setVisible(true);
                     this.explosion.sprite.anims.play(this.explosion.key, true);
+
+                    this.explosion.sound?.play();
+
+                    this.map.changeSpeed(1);
                 }
-                
-                // this.coins.sound?.play();
 
-                // this.earnedPoints += coinObject.getRewardPoints();
-                
-                // this.scene.events.emit('onScoreChanged', this.earnedPoints, coinObject.getRewardPoints());
-
-                // this.coins.objectMapper[id].destroyCoin();
-
-                // console.log(`Earned points: ${this.earnedPoints}`);
+                console.log('GameOver');
             }
         }
     }
@@ -337,20 +381,20 @@ export class Traffic {
     private handleVehicleDestroyed(id: string): void {
         console.log(`Vehicle #${id} is history!`);
 
+        this.availableLanes.push(this.vehicles.objectMapper[id].getLane());
+
         delete this.vehicles.objectMapper[id];
         delete this.vehicles.spriteMapper[id];
-
+        
         if (this.player) {
-            const vehicle = this.generateVehicle(
-                VehicleType.CIVIC, 
+            this.generateVehicle(
+                this.getRandomVehicle().type, 
                 { 
                     from: this.map.getNumRoadChunks() - 2, 
                     to: this.map.getNumRoadChunks() - 1
                 },
                 [ this.player.getSprite() ]
             );
-
-            vehicle.slowDown(Phaser.Math.Between(vehicles[VehicleType.CIVIC].speed.from, vehicles[VehicleType.CIVIC].speed.to));
         }
     }
 };

@@ -1,3 +1,5 @@
 export default interface IMovable {
-    slowDown(speed: number): void;
+    speed: number;
+
+    move(): void;
 };

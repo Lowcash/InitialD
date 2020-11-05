@@ -1,7 +1,7 @@
 import { Range, SpriteMappingSized, Common } from './common';
 import { isRange } from './typeGuardHelper'
 import { Map } from './map'
-import { Vehicle } from './vehicle';
+import { Vehicle } from './traffic';
 
 import IMovable from './IMovable';
 import ICollidable from './ICollidable';
@@ -38,6 +38,8 @@ class Coin implements ICollidable {
 
     public registerCollision(collideWith: Phaser.Physics.Arcade.Sprite): void {
         this.scene.physics.add.overlap(this.sprite, collideWith, () => {
+            this.destroyCoin();
+            
             this.scene.events.emit('onCoinCollided', this.id );
         });
     }
@@ -103,6 +105,8 @@ export class Reward implements IMovable {
     };
 
     private earnedPoints: number = 0;
+    
+    speed: number = 0;
 
     constructor(scene: Phaser.Scene, map: Map, player: Vehicle, depthLayer: number = 0, scale: number = 1, numCoinsToGenerate: number = 0) {
         this.scene = scene;
@@ -128,6 +132,9 @@ export class Reward implements IMovable {
         });
         this.scene.events.on('onCoinDestroyed', (id: string) => {
             this.handleCoinDestroyed(id);
+        });
+        this.scene.events.on('onMapSpeedChanged', (speed: number) => {
+            this.handleMapSpeedChanged(speed);
         });
     }
 
@@ -177,8 +184,12 @@ export class Reward implements IMovable {
         this.registerCoins();
     }
 
-    public slowDown(speed: number) {
-        this.coins.group?.incX(-speed);
+    public move(): void {
+        this.coins.group?.incX(this.speed);
+    }
+
+    private handleMapSpeedChanged(speed: number) {
+        this.speed = speed;
     }
 
     private handleCoinCollided(id: string): void {

@@ -1,3 +1,5 @@
+import IMovable from "./IMovable";
+
 export enum ChunkType {
     ROAD_STRAIGHT = 0
 };
@@ -64,7 +66,7 @@ interface Chunks {
     group?: Phaser.Physics.Arcade.Group;
 };
 
-export class Map {
+export class Map implements IMovable {
     private readonly scene: Phaser.Scene;
     private readonly scale: number;
     
@@ -78,13 +80,15 @@ export class Map {
     private mapXOffset: number;
     private mapYOffset: number;
 
+    speed: number = 0;
+
     constructor(scene: Phaser.Scene, mapStartX: number, mapStartY, chunkScale: number = 5, numChunkToGenerate: number = 10) {
         this.scene = scene;
         this.scale = chunkScale;
 
         this.mapXOffset = mapStartX;
         this.mapYOffset = mapStartY;
-        
+
         for (let i = 0; i < numChunkToGenerate; ++i) {
             this.mapXOffset = i * roadChunks[ChunkType.ROAD_STRAIGHT].width * this.scale;
 
@@ -94,8 +98,8 @@ export class Map {
         this.registerChunks();
     }
     
-    public moveMap(speed: number): void {
-        this.group?.incX(speed);
+    public move(): void {
+        this.group?.incX(this.speed);
 
         if(this.road.images[0].x <= this.road.images[0].width * this.scale * - 1) {
             this.shiftChunk();
@@ -104,6 +108,16 @@ export class Map {
 
             this.registerChunks();
         }
+    }
+
+    public changeSpeed(speed: number): void {
+        this.speed = speed;
+
+        this.scene.events.emit('onMapSpeedChanged', this.speed);
+    }
+
+    public getSpeed(): number {
+        return this.speed;
     }
 
     public getRandomLaneIdx(roadIdx: number): number {
