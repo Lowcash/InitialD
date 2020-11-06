@@ -1,9 +1,9 @@
-import { Range, SpriteMapping } from '../objects/common'
+import { SpriteMapping } from '../objects/common'
 
-import { isTileSprite, isSprite } from '../objects/typeGuardHelper'
+import { isTileSprite } from '../objects/typeGuardHelper'
 
 import { Map } from '../objects/map'
-import { Traffic, Vehicle, vehicles, VehicleType } from '../objects/traffic'
+import { Traffic, Vehicle, VehicleType } from '../objects/traffic'
 import '../objects/reward'
 import { Reward, RewardHUD } from '../objects/reward';
 
@@ -60,8 +60,9 @@ export default class SceneLevel extends Phaser.Scene {
 
     // ----------------------------- Init map ----------------------------- //
     this.map = new Map(
-      this, 
+      this,
       0, 
+      0,
       this.cameras.main.height - this.textures.get('image_road_straight').getSourceImage().height * this.objectScale,
       this.objectScale,
       10
@@ -92,7 +93,7 @@ export default class SceneLevel extends Phaser.Scene {
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    this.map.changeSpeed(-5.0);
+    this.map.changeSpeed(-1.0);
 
     setInterval(() => {
       this.map.changeSpeed(this.map.getSpeed() - 1);

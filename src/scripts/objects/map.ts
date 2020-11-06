@@ -70,6 +70,8 @@ export class Map implements IMovable {
     private readonly scene: Phaser.Scene;
     private readonly scale: number;
     
+    private readonly depthLayer: number;
+
     private road: Chunks = {
         images: [],
         properties: []
@@ -82,17 +84,17 @@ export class Map implements IMovable {
 
     speed: number = 0;
 
-    constructor(scene: Phaser.Scene, mapStartX: number, mapStartY, chunkScale: number = 5, numChunkToGenerate: number = 10) {
+    constructor(scene: Phaser.Scene, depthLayer: number, mapStartX: number, mapStartY, chunkScale: number = 5, numChunkToGenerate: number = 10) {
         this.scene = scene;
         this.scale = chunkScale;
 
         this.mapXOffset = mapStartX;
         this.mapYOffset = mapStartY;
 
-        for (let i = 0; i < numChunkToGenerate; ++i) {
-            this.mapXOffset = i * roadChunks[ChunkType.ROAD_STRAIGHT].width * this.scale;
+        this.depthLayer = depthLayer;
 
-            this.appendChunk(roadChunks[ChunkType.ROAD_STRAIGHT], this.scale, this.mapXOffset, this.mapYOffset);
+        for (let i = 0; i < numChunkToGenerate; ++i) {
+            this.appendChunk(roadChunks[ChunkType.ROAD_STRAIGHT]);
         }
 
         this.registerChunks();
@@ -104,7 +106,7 @@ export class Map implements IMovable {
         if(this.road.images[0].x <= this.road.images[0].width * this.scale * - 1) {
             this.shiftChunk();
 
-            this.appendChunk(roadChunks[ChunkType.ROAD_STRAIGHT], this.scale, this.mapXOffset, this.mapYOffset);
+            this.appendChunk(roadChunks[ChunkType.ROAD_STRAIGHT]);
 
             this.registerChunks();
         }
@@ -155,19 +157,25 @@ export class Map implements IMovable {
         const firstRoadChunk = this.road.images.shift() as Phaser.GameObjects.Image;
 
         this.group?.remove(firstRoadChunk);
-
+        
         firstRoadChunk.destroy();
     }
 
-    private appendChunk(chunk: RoadChunkProperties, scale: number, positionX: number, positionY: number = 1): void {
+    private appendChunk(chunk: RoadChunkProperties): void {
+        let x = this.mapXOffset;
+
+        if (this.road.images.length > 0) {
+            x = (this.road.images[this.road.images.length - 1].x + this.road.images[this.road.images.length - 1].width * this.scale);
+        }
+
         this.road.images.push(
             this.scene.add.image(
-                positionX, 
-                positionY, 
+                x, 
+                this.mapYOffset, 
                 chunk.mappingKey)
-                    .setScale(scale)
+                    .setScale(this.scale)
                     .setOrigin(0)
-                    .setDepth(0)
+                    .setDepth(this.depthLayer)
         );
         
         this.road.properties.push(chunk);

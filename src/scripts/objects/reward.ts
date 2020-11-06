@@ -5,6 +5,7 @@ import { Vehicle } from './traffic';
 
 import IMovable from './IMovable';
 import ICollidable from './ICollidable';
+import HUD from './HUD';
 
 class Coin implements ICollidable {
     private readonly scene: Phaser.Scene;
@@ -39,7 +40,7 @@ class Coin implements ICollidable {
     public registerCollision(collideWith: Phaser.Physics.Arcade.Sprite): void {
         this.scene.physics.add.overlap(this.sprite, collideWith, () => {
             this.destroyCoin();
-            
+
             this.scene.events.emit('onCoinCollided', this.id );
         });
     }
@@ -220,9 +221,7 @@ export class Reward implements IMovable {
     }
 };
 
-export class RewardHUD {
-    private readonly scene: Phaser.Scene;
-
+export class RewardHUD extends HUD {
     private readonly scoreLabel: Phaser.GameObjects.BitmapText;
 
     private readonly fontSize: number;
@@ -230,22 +229,11 @@ export class RewardHUD {
     private readonly zeroPadding: number;
 
     constructor(scene: Phaser.Scene, color: number = 0x000000, fontSize: number = 38, fontPadding: number = 50, zeroPadding: number = 6) {
-        this.scene = scene;
+        super(scene, new Phaser.Geom.Rectangle(0, 0, scene.game.config.width as number, fontSize + fontPadding), color);
 
         this.fontSize = fontSize;
         this.fontPadding = fontPadding;
         this.zeroPadding = zeroPadding;
-
-        const graphicsHUD = this.scene.add.graphics();
-        graphicsHUD.fillStyle(color, 1);
-        graphicsHUD.beginPath();
-        graphicsHUD.moveTo(0, 0);
-        graphicsHUD.lineTo(this.scene.game.config.width as number,  0);
-        graphicsHUD.lineTo(this.scene.game.config.width as number, this.fontSize + this.fontPadding);
-        graphicsHUD.lineTo(0, this.fontSize + this.fontPadding);
-        graphicsHUD.lineTo(0, 0);
-        graphicsHUD.closePath();
-        graphicsHUD.fillPath();
 
         this.scoreLabel = this.scene.add.bitmapText(this.fontPadding, this.fontPadding, 'font', 'NO SCORE', this.fontSize);
 

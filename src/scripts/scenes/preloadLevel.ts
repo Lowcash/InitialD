@@ -4,12 +4,6 @@ export default class PreloadLevel extends Phaser.Scene {
   }
 
   preload() {
-    this.load.atlas(
-      'atlas_vehicles',
-      'assets/img/vehicle_atlas_mapping.png',
-      'assets/img/vehicle_atlas_mapping.json'
-    );
-
     this.load.spritesheet(
       'sprite_explosion',
       'assets/img/explosion.png',
@@ -27,8 +21,6 @@ export default class PreloadLevel extends Phaser.Scene {
         frameHeight: 32
       }
     );
-
-    this.load.image('image_road_straight', 'assets/img/road_straight_1.png');
 
     this.load.bitmapFont('font', 'assets/img/font.png', 'assets/img/font.xml');
 

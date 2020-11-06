@@ -5,7 +5,7 @@ import { Map } from './map'
 import IMovable from './IMovable';
 import ICollidable from './ICollidable';
 
-enum Direction {
+export enum Direction {
     FRONT = 'front', LEFT = 'left', RIGHT = 'right'
 }
 
@@ -274,13 +274,19 @@ export class Traffic {
         });
     }
 
-    public generateVehicle(vehicleType: VehicleType, gridPosX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], istakeLane: boolean = true): Vehicle {
-        const randomX = isRange(gridPosX) ?
-            this.map.getRandomRoadIdx(gridPosX.from, gridPosX.to) :
-            this.map.getRandomRoadIdx(gridPosX);
+    public clearTraffic(): void {
+        for (const o of Object.values(this.vehicles.objectMapper)) {
+            o.destroyVehicle();
+        }
+    }
+
+    public generateVehicle(vehicleType: VehicleType, posX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], istakeLane: boolean = true): Vehicle {
+        const _posX = isRange(posX) ?
+            this.map.getRandomRoadIdx(posX.from, posX.to) :
+            posX;
         
         const availableLaneIdx = Phaser.Math.Between(0, this.availableLanes.length - 1);
-        const randomY = this.availableLanes[availableLaneIdx];
+        const _posY = this.availableLanes[availableLaneIdx];
 
         if (istakeLane) {
             this.availableLanes.splice(availableLaneIdx, 1);
@@ -289,21 +295,21 @@ export class Traffic {
         //const randomY = this.map.getRandomLaneIdx(randomX);
         
         this.vehicles.spriteMapper[this.vehicles.numCreatedVehicles.toString()] = this.scene.physics.add.sprite(
-            this.map.getChunkCenter(randomX).x, 
-            this.map.getLanePosition(randomX, randomY), 
+            isRange(posX) ? this.map.getChunkCenter(_posX).x : _posX, 
+            this.map.getLanePosition(_posX, _posY), 
             'atlas_vehicles',
             `${vehicleType.toString()}/${Direction.FRONT.toString()}`
         )
-            .setScale(this.map.getPerspectiveScale(randomX, randomY))
+            .setScale(this.map.getPerspectiveScale(_posX, _posY))
             .setOrigin(0.5, 1.0)
-            .setDepth(this.map.getNumRoadChunkLanes(randomX) - randomY);
+            .setDepth(this.map.getNumRoadChunkLanes(_posX) - _posY);
         
         const vehicle = new Vehicle(
             this.scene,
             this.map,
             this.vehicles.numCreatedVehicles.toString(),
             this.vehicles.spriteMapper[this.vehicles.numCreatedVehicles.toString()],
-            new Phaser.Math.Vector2(randomX, randomY),
+            new Phaser.Math.Vector2(_posX, _posY),
             collideWith,
             vehicleType,
             Phaser.Math.FloatBetween(vehicles[vehicleType].speed.from, vehicles[vehicleType].speed.to),
