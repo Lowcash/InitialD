@@ -1,4 +1,4 @@
-import IMovable from "./IMovable";
+import IMovable from "./interfaces/IMovable";
 
 export enum ChunkType {
     ROAD_STRAIGHT = 0
@@ -66,7 +66,7 @@ interface Chunks {
     group?: Phaser.Physics.Arcade.Group;
 };
 
-export class Map implements IMovable {
+export default class Map implements IMovable {
     private readonly scene: Phaser.Scene;
     private readonly scale: number;
     

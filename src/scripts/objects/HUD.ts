@@ -15,3 +15,11 @@ export default class HUD extends Phaser.GameObjects.Graphics {
         scene.add.existing(this);
     }
 };
+
+export type HUDFrameSettings = {
+    text: string;
+    textPadding: number;
+    fontSize: number;
+    color: number;
+    alpha: number;
+};

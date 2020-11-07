@@ -1,7 +1,7 @@
 {
 	"textures": [
 		{
-			"image": "vehicle_atlas_mapping.png",
+			"image": "atlas_mapping.png",
 			"format": "RGBA8888",
 			"size": {
 				"w": 128,

@@ -1,78 +1,14 @@
-import { Range, SpriteMappingSized, Common } from './common';
-import { isRange } from './typeGuardHelper'
-import { Map } from './map'
-import { Vehicle } from './traffic';
+import { Range } from '../_common/common';
+import TypeGuardHelper from '../_common/typeGuardHelper';
+import { SpriteMappingSized } from '../_common/mappingHelper';
 
-import IMovable from './IMovable';
-import ICollidable from './ICollidable';
-import HUD from './HUD';
+import Coin from './coin'
+import Map from '../map'
+import Vehicle from '../traffic/vehicle';
 
-class Coin implements ICollidable {
-    private readonly scene: Phaser.Scene;
+import IMovable from '../interfaces/IMovable';
 
-    private readonly id: string;
-
-    private readonly sprite: Phaser.Physics.Arcade.Sprite;
-
-    private readonly gridPos: Phaser.Math.Vector2;
-
-    private readonly rewardPoints: number;
-
-    private isAlive: boolean = true;
-
-    constructor(scene: Phaser.Scene, id: string, sprite: Phaser.Physics.Arcade.Sprite, gridPos: Phaser.Math.Vector2, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], rewardPoints: number = 10) {
-        this.scene = scene;
-
-        this.id = id;
-        this.sprite = sprite;
-
-        this.gridPos = gridPos;
-
-        this.rewardPoints = rewardPoints;
-
-        for (const c of collideWith) {
-            this.registerCollision(c);
-        }
-
-        this.watchStillAlive();
-    }
-
-    public registerCollision(collideWith: Phaser.Physics.Arcade.Sprite): void {
-        this.scene.physics.add.overlap(this.sprite, collideWith, () => {
-            this.destroyCoin();
-
-            this.scene.events.emit('onCoinCollided', this.id );
-        });
-    }
-
-    public destroyCoin(): void {
-        this.sprite.destroy();
-
-        this.isAlive = false;
-    }
-
-    public getLane(): number {
-        return this.gridPos.y;
-    }
-
-    public getRewardPoints(): number {
-        return this.rewardPoints;
-    }
-
-    private async watchStillAlive(): Promise<void> {
-        while (this.isAlive) {
-            if (this.sprite.x < -this.sprite.width) {
-                this.destroyCoin();
-            }
-
-            await Common.delay(60, 0);
-        }
-
-        this.scene.events.emit('onCoinDestroyed', this.id );
-    }
-};
-
-export class Reward implements IMovable {
+export default class Reward implements IMovable {
     private readonly scene: Phaser.Scene;
     private readonly map: Map;
     private readonly player: Vehicle;
@@ -85,7 +21,7 @@ export class Reward implements IMovable {
     } & SpriteMappingSized = {
         key: 'coin',
         mappingKey: 'sprite_coin',
-        soundKey: 'sound_coin_earned',
+        soundKey: 'sound_coin',
 
         size: 32
     };
@@ -140,7 +76,7 @@ export class Reward implements IMovable {
     }
 
     public generateCoin(gridPosX: Range | number): void {
-        const randomX = isRange(gridPosX) ?
+        const randomX = TypeGuardHelper.isRange(gridPosX) ?
             this.map.getRandomRoadIdx(gridPosX.from, gridPosX.to) :
             this.map.getRandomRoadIdx(gridPosX);
         
@@ -218,47 +154,5 @@ export class Reward implements IMovable {
         delete this.coins.spriteMapper[id];
 
         this.generateRandomCoins(1, { from: 8, to: this.map.getNumRoadChunks() - 1});
-    }
-};
-
-export class RewardHUD extends HUD {
-    private readonly scoreLabel: Phaser.GameObjects.BitmapText;
-
-    private readonly fontSize: number;
-    private readonly fontPadding: number;
-    private readonly zeroPadding: number;
-
-    constructor(scene: Phaser.Scene, color: number = 0x000000, fontSize: number = 38, fontPadding: number = 50, zeroPadding: number = 6) {
-        super(scene, new Phaser.Geom.Rectangle(0, 0, scene.game.config.width as number, fontSize + fontPadding), color);
-
-        this.fontSize = fontSize;
-        this.fontPadding = fontPadding;
-        this.zeroPadding = zeroPadding;
-
-        this.scoreLabel = this.scene.add.bitmapText(this.fontPadding, this.fontPadding, 'font', 'NO SCORE', this.fontSize);
-
-        this.updateScore(0, this.zeroPadding);
-
-        this.scene.events.on('onScoreChanged', (totalScore: number, changedByValue: number) => {
-            this.handleScoreChanged(totalScore);
-        });
-    }
-
-    private fillZeroPadding(number: number, size: number): string {
-        let stringNumber = number.toString();
-
-        while (stringNumber.length < (size || 2)) {
-            stringNumber = "0" + stringNumber;
-        }
-
-        return stringNumber;
-    }
-
-    private handleScoreChanged(totalScore: number): void {
-        this.updateScore(totalScore, this.zeroPadding);
-    }
-
-    private updateScore(score: number, zeroPadding: number) {
-        this.scoreLabel.text = `SCORE ${this.fillZeroPadding(score, zeroPadding)}`;
     }
 };

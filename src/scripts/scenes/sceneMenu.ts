@@ -1,23 +1,16 @@
-import HUD from '../objects/HUD';
-import BasicButton from '../objects/basicButton';
-import { PreloadDataModel } from './preloadMenu'
-import { Map } from '../objects/map'
-import { Traffic, Vehicle, VehicleType, Direction } from '../objects/traffic'
+import { sourceModel } from '../models/source'
+import { Controls, SettingsModel } from '../models/settings'
 
-enum Controls { LEFT_RIGHT = 0, UP_DOWN };
+import BasicButton from '../objects/buttons/basicButton';
+import HUD, { HUDFrameSettings } from '../objects/HUD';
+
+import Map from '../objects/map'
+import Traffic from '../objects/traffic/traffic'
+import Vehicle, { VehicleType, Direction } from '../objects/traffic/vehicle'
+
 enum ControlState { NOT_SELECTED = 2, PENDING = 1, SELECTED = 0 };
 
-type FrameSettings = {
-  text: string;
-  textPadding: number;
-  fontSize: number;
-  color: number;
-  alpha: number;
-};
-
 export default class SceneMenu extends Phaser.Scene {
-  private inputData: PreloadDataModel;
-  
   private readonly city: {
     tileSprite?: Phaser.GameObjects.TileSprite;
 
@@ -58,7 +51,7 @@ export default class SceneMenu extends Phaser.Scene {
     selectedControls: Controls
 
     group?: Phaser.GameObjects.Group;
-  } & FrameSettings = {
+  } & HUDFrameSettings = {
     standartScale: 1.0,
     actionScale: 1.15,
 
@@ -80,7 +73,7 @@ export default class SceneMenu extends Phaser.Scene {
     selectedVehicle: VehicleType;
 
     group?: Phaser.GameObjects.Group;
-  } & FrameSettings = {
+  } & HUDFrameSettings = {
     mapping: {},
 
     standartScale: 5.0,
@@ -114,10 +107,6 @@ export default class SceneMenu extends Phaser.Scene {
     super({ key: 'SceneMenu' })
   }
 
-  private init(inputData: PreloadDataModel): void {
-    this.inputData = inputData;
-  }
-
   private create(): void {
     this.prepareBackground();
     this.prepareStart();
@@ -144,7 +133,8 @@ export default class SceneMenu extends Phaser.Scene {
     if (this.map.object) {
       this.traffic = new Traffic(
         this,
-        this.map.object
+        this.map.object,
+        false
       );
   
       this.selectCar(this.vehicles.selectedVehicle, `${this.vehicles.selectedVehicle}/${Direction.RIGHT}`);
@@ -152,7 +142,7 @@ export default class SceneMenu extends Phaser.Scene {
   }
 
   private prepareMap(): void {
-    const roadChunkTex = this.textures.get(this.inputData.imageRoadStraight.mappingKey).getSourceImage();
+    const roadChunkTex = this.textures.get(sourceModel.imageRoadStraight.mappingKey).getSourceImage();
 
     this.map.object = new Map(
       this,
@@ -164,7 +154,7 @@ export default class SceneMenu extends Phaser.Scene {
   }
 
   private prepareBackground(): void {
-    //this.add.image(this.cameras.main.centerX, 100, this.inputData.imageLogo.mappingKey);
+    //this.add.image(this.cameras.main.centerX, 100, sourceModel.imageLogo.mappingKey);
 
     this.city.tileSprite = 
       this.add.tileSprite(
@@ -172,7 +162,7 @@ export default class SceneMenu extends Phaser.Scene {
         this.cameras.main.height * 0.35, 
         0, 
         0, 
-        this.inputData.imageCity.mappingKey
+        sourceModel.imageCity.mappingKey
       ).setScale(this.city.standartScale);
     
     this.hill.tileSprite = 
@@ -181,7 +171,7 @@ export default class SceneMenu extends Phaser.Scene {
         this.cameras.main.height * 0.65, 
         0, 
         0, 
-        this.inputData.imageHill.mappingKey
+        sourceModel.imageHill.mappingKey
       ).setScale(this.hill.standartScale);
   }
 
@@ -192,11 +182,11 @@ export default class SceneMenu extends Phaser.Scene {
         this.cameras.main.centerX,
         this.cameras.main.height * 0.13
       ),
-      this.inputData.spriteStart.mappingKey,
+      sourceModel.spriteStart.mappingKey,
       999,
       this.start.standartScale,
       undefined,
-      this.inputData.soundButton.mappingKey
+      sourceModel.soundButton.mappingKey
     );
     
     this.start.button?.on('pointerover', this.handleHoverStartButton, this);
@@ -208,7 +198,7 @@ export default class SceneMenu extends Phaser.Scene {
     const controlsText = this.add.bitmapText(
       this.controls.textPadding, 
       this.controls.textPadding, 
-      this.inputData.font.mappingKey, 
+      sourceModel.font.mappingKey, 
       this.controls.text, 
       this.controls.fontSize
     );
@@ -232,11 +222,11 @@ export default class SceneMenu extends Phaser.Scene {
         this.cameras.main.width * 0.1,
         this.cameras.main.height * 0.22
       ),
-      this.inputData.spriteArrows.mappingKey,
+      sourceModel.spriteArrows.mappingKey,
       999,
       undefined,
       undefined,
-      this.inputData.soundButton.mappingKey
+      sourceModel.soundButton.mappingKey
     );
     
     this.controls.lrButton.on('pointerover', this.handleHoverLRControlArrows, this);
@@ -249,11 +239,11 @@ export default class SceneMenu extends Phaser.Scene {
         this.cameras.main.width * 0.3,
         this.cameras.main.height * 0.22
       ),
-      this.inputData.spriteArrows.mappingKey,
+      sourceModel.spriteArrows.mappingKey,
       999,
       undefined,
       90,
-      this.inputData.soundButton.mappingKey
+      sourceModel.soundButton.mappingKey
     );
     
     this.controls.udButton.on('pointerover', this.handleHoverUDControlArrows, this);
@@ -283,7 +273,7 @@ export default class SceneMenu extends Phaser.Scene {
     const vehiclesText = this.add.bitmapText(
       this.vehicles.textPadding, 
       this.vehicles.textPadding, 
-      this.inputData.font.mappingKey, 
+      sourceModel.font.mappingKey, 
       this.vehicles.text, 
       this.vehicles.fontSize
     );
@@ -306,7 +296,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.vehicles.group?.add(hud);
     this.vehicles.group?.add(vehiclesText);
     
-    const offset = new Phaser.Math.Vector2(0, 2.1 * vehiclesText.height);
+    const offset = new Phaser.Math.Vector2(20, 2.1 * vehiclesText.height);
     
     this.addVehicleToGroupAsGrid(VehicleType.RX_7_FC, Direction.RIGHT, new Phaser.Math.Vector2(0, 1), offset);
     this.addVehicleToGroupAsGrid(VehicleType.RX_7_FD, Direction.RIGHT, new Phaser.Math.Vector2(1, 1), offset);
@@ -329,7 +319,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.vehicles.mapping[mappingKey] = this.add.image(
       offset.x + (vehicleTex.width * gridPos.x) * this.vehicles.standartScale,
       offset.y + (vehicleTex.height * 0.75 * gridPos.y) * this.vehicles.standartScale,
-      this.inputData.atlasVehicle.mappingKey,
+      sourceModel.atlasVehicle.mappingKey,
       mappingKey
     ).setOrigin(0, 0)
      .setScale(this.vehicles.standartScale)
@@ -401,7 +391,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.controls.udButton?.off('pointerout');
     this.controls.udButton?.off('pointerdown');
 
-    this.scene.start('PreloadLevel');
+    this.scene.start('PreloadLevel', new SettingsModel(this.controls.selectedControls, this.vehicles.selectedVehicle));
   }
 
   private handleHoverLRControlArrows(context: any) {
