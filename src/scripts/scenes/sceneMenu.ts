@@ -1,36 +1,66 @@
 import { sourceModel } from '../models/source'
-import { Controls, SettingsModel } from '../models/settings'
+import { Direction } from '../objects/_common/common'
+import { Controls, DeviceType, SettingsModel } from '../models/settings'
 
 import BasicButton from '../objects/buttons/basicButton';
+import BackgroundTileSprite, { BackgroundTileSpriteMapping } from '../objects/tilesprite'
 import HUD, { HUDFrameSettings } from '../objects/HUD';
 
-import Map from '../objects/map'
+import Map from '../objects/map/map'
 import Traffic from '../objects/traffic/traffic'
-import Vehicle, { VehicleType, Direction } from '../objects/traffic/vehicle'
+import Vehicle, { VehicleType } from '../objects/traffic/vehicle'
 
 enum ControlState { NOT_SELECTED = 2, PENDING = 1, SELECTED = 0 };
 
 export default class SceneMenu extends Phaser.Scene {
-  private readonly city: {
-    tileSprite?: Phaser.GameObjects.TileSprite;
-
-    standartScale: number;
-    moveSpeed: number;
-  } = {
-    standartScale: 1.35,
-    moveSpeed: 0.25
+  private readonly city: BackgroundTileSpriteMapping = {
+    mappingKey: sourceModel.imageCity.mappingKey,
+    bottomOffsetMult: 0.35,
+    moveSpeed: 0.25,
+    depth: 0
   };
 
-  private readonly hill: {
-    tileSprite?: Phaser.GameObjects.TileSprite;
-
-    standartScale: number;
-    moveSpeed: number;
-  } = {
-    standartScale: 1.35,
-    moveSpeed: 0.5
+  private readonly hill: BackgroundTileSpriteMapping = {
+    mappingKey: sourceModel.imageHill.mappingKey,
+    bottomOffsetMult: 0.65,
+    moveSpeed: 0.5,
+    depth: 0
   };
 
+  private readonly clouds: BackgroundTileSpriteMapping = {
+    mappingKey: sourceModel.imageClouds.mappingKey,
+    bottomOffsetMult: 0.12,
+    innerScale: 1.25,
+    moveSpeed: 0.25,
+    depth: 10
+  };
+
+  private readonly foregForest: BackgroundTileSpriteMapping = {
+    mappingKey: sourceModel.imageForest.mappingKey,
+    moveSpeed: 1.0,
+    innerScale: 1.3,
+    depth: 10,
+    origin: new Phaser.Math.Vector2(0.5, 1.0)
+  };
+  
+  private readonly backgForest: BackgroundTileSpriteMapping = {
+    mappingKey: sourceModel.imageForest.mappingKey,
+    bottomOffsetMult: 0.72,
+    moveSpeed: 1.0,
+    innerScale: 0.7,
+    origin: new Phaser.Math.Vector2(0.5, 1.0),
+    depth: 8
+  };
+
+  private readonly backBackgForest: BackgroundTileSpriteMapping = {
+    mappingKey: sourceModel.imageForest.mappingKey,
+    bottomOffsetMult: 0.72,
+    moveSpeed: 1.0,
+    innerScale: 0.5,
+    origin: new Phaser.Math.Vector2(0.5, 1.0),
+    depth: 7
+  };
+  
   private readonly start: {
     button?: BasicButton;
 
@@ -91,13 +121,13 @@ export default class SceneMenu extends Phaser.Scene {
   private readonly map: {
     object?: Map;
 
-    chunkScale: number;
+    //chunkScale: number;
 
     moveSpeed: number;
   } = {
-    chunkScale: 5,
+    //chunkScale: 1,
 
-    moveSpeed: -2.5
+    moveSpeed: -1.0
   };
 
   private player: Vehicle;
@@ -113,28 +143,41 @@ export default class SceneMenu extends Phaser.Scene {
     this.prepareControls();
     this.prepareVehicles();
     this.prepareMap();
-    this.prepareTraffic();
-    
+    //this.prepareTraffic();
+
     this.map.object?.changeSpeed(this.map.moveSpeed)
   }
 
   public update(): void {
     if(this.city.tileSprite) {
-      this.city.tileSprite.tilePositionX += this.city.moveSpeed;
+      this.city.tileSprite.move();
     }
     if(this.hill.tileSprite) {
-      this.hill.tileSprite.tilePositionX += this.hill.moveSpeed;
+      this.hill.tileSprite.move();
+    }
+    if(this.foregForest.tileSprite) {
+      this.foregForest.tileSprite.move();
+    }
+    if(this.backgForest.tileSprite) {
+      this.backgForest.tileSprite.move();
+    }
+    if(this.clouds.tileSprite) {
+      this.clouds.tileSprite.move();
+    }
+    if(this.backBackgForest.tileSprite) {
+      this.backBackgForest.tileSprite.move();
     }
 
     this.map.object?.move();
   }
 
+//#region Prepares
+
   private prepareTraffic(): void {
     if (this.map.object) {
       this.traffic = new Traffic(
         this,
-        this.map.object,
-        false
+        this.map.object
       );
   
       this.selectCar(this.vehicles.selectedVehicle, `${this.vehicles.selectedVehicle}/${Direction.RIGHT}`);
@@ -142,14 +185,15 @@ export default class SceneMenu extends Phaser.Scene {
   }
 
   private prepareMap(): void {
-    const roadChunkTex = this.textures.get(sourceModel.imageRoadStraight.mappingKey).getSourceImage();
+    const roadChunkTex = this.textures.get(sourceModel.imageRoadStraight0.mappingKey).getSourceImage();
 
     this.map.object = new Map(
       this,
-      0,
+      9,
       0, 
-      this.cameras.main.height * 0.85 - roadChunkTex.height * this.map.chunkScale,
-      this.map.chunkScale
+      this.cameras.main.height,
+      1,
+      5
     );
   }
 
@@ -157,22 +201,76 @@ export default class SceneMenu extends Phaser.Scene {
     //this.add.image(this.cameras.main.centerX, 100, sourceModel.imageLogo.mappingKey);
 
     this.city.tileSprite = 
-      this.add.tileSprite(
-        this.cameras.main.centerX, 
-        this.cameras.main.height * 0.35, 
-        0, 
-        0, 
-        sourceModel.imageCity.mappingKey
-      ).setScale(this.city.standartScale);
+      new BackgroundTileSprite(
+        this,
+        this.city.mappingKey,
+        this.city.moveSpeed,
+        this.city.outerScale,
+        this.city.innerScale,
+        undefined,
+        undefined,
+        this.city.bottomOffsetMult
+      );
     
     this.hill.tileSprite = 
-      this.add.tileSprite(
-        this.cameras.main.centerX, 
-        this.cameras.main.height * 0.65, 
-        0, 
-        0, 
-        sourceModel.imageHill.mappingKey
-      ).setScale(this.hill.standartScale);
+      new BackgroundTileSprite(
+        this,
+        this.hill.mappingKey,
+        this.hill.moveSpeed,
+        this.hill.outerScale,
+        this.hill.innerScale,
+        undefined,
+        undefined,
+        this.hill.bottomOffsetMult
+      );
+    
+    this.clouds.tileSprite = 
+      new BackgroundTileSprite(
+        this,
+        this.clouds.mappingKey,
+        this.clouds.moveSpeed,
+        this.clouds.outerScale,
+        this.clouds.innerScale,
+        this.clouds.depth,
+        undefined,
+        this.clouds.bottomOffsetMult
+      );
+      
+    this.foregForest.tileSprite = 
+      new BackgroundTileSprite(
+        this,
+        this.foregForest.mappingKey,
+        this.foregForest.moveSpeed,
+        this.foregForest.outerScale,
+        this.foregForest.innerScale,
+        this.foregForest.depth,
+        this.foregForest.origin,
+        this.foregForest.bottomOffsetMult
+      );
+
+    this.backgForest.tileSprite = 
+      new BackgroundTileSprite(
+        this,
+        this.backgForest.mappingKey,
+        this.backgForest.moveSpeed,
+        this.backgForest.outerScale,
+        this.backgForest.innerScale,
+        this.backgForest.depth,
+        this.backgForest.origin,
+        this.backgForest.bottomOffsetMult
+      );
+
+      this.backBackgForest.tileSprite = 
+      new BackgroundTileSprite(
+        this,
+        this.backBackgForest.mappingKey,
+        this.backBackgForest.moveSpeed,
+        this.backBackgForest.outerScale,
+        this.backBackgForest.innerScale,
+        this.backBackgForest.depth,
+        this.backBackgForest.origin,
+        this.backBackgForest.bottomOffsetMult
+      );
   }
 
   private prepareStart(): void {
@@ -311,6 +409,8 @@ export default class SceneMenu extends Phaser.Scene {
     );
   }
 
+  //#endregion
+
   private addVehicleToGroupAsGrid(vehicle: VehicleType, direction: Direction, gridPos: Phaser.Math.Vector2, offset: Phaser.Math.Vector2): void {
     const mappingKey = `${vehicle.toString()}/${direction.toString()}`;
 
@@ -324,6 +424,7 @@ export default class SceneMenu extends Phaser.Scene {
     ).setOrigin(0, 0)
      .setScale(this.vehicles.standartScale)
      .setInteractive()
+     .setDepth(999)
      .on('pointerdown', () => {this.handleClickVehicle(vehicle, mappingKey)});
 
      this.vehicles.group?.add(this.vehicles.mapping[mappingKey]);
@@ -360,6 +461,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.player = this.traffic.generateVehicle(this.vehicles.selectedVehicle, 0, [], false);
   }
 
+//#region Handlers
   private handleClickVehicle(vehicle: VehicleType, mappingKey: string): void {
     this.selectCar(vehicle, mappingKey);
   }
@@ -391,7 +493,12 @@ export default class SceneMenu extends Phaser.Scene {
     this.controls.udButton?.off('pointerout');
     this.controls.udButton?.off('pointerdown');
 
-    this.scene.start('PreloadLevel', new SettingsModel(this.controls.selectedControls, this.vehicles.selectedVehicle));
+    this.scene.start('PreloadLevel', new SettingsModel(
+      this.sys.game.device.os.desktop ? DeviceType.DESKTOP : DeviceType.MOBILE,
+      this.controls.selectedControls, 
+      this.vehicles.selectedVehicle
+      )
+    );
   }
 
   private handleHoverLRControlArrows(context: any) {
@@ -430,3 +537,4 @@ export default class SceneMenu extends Phaser.Scene {
     this.switchControls(ControlState.NOT_SELECTED, ControlState.SELECTED);
   }
 }
+//#endregion

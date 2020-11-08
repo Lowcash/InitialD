@@ -16,9 +16,39 @@ export default class Common {
 
         return stringNumber;
     }
+
+    static isImgOutOfScreen(img: Phaser.GameObjects.Image | Phaser.GameObjects.Sprite, screen: Phaser.Cameras.Scene2D.Camera): boolean {
+        return (
+            img.x + (img.width * img.scaleX) < 0 ||
+            img.x > screen.width ||
+            img.y + (img.height * img.scaleY) < 0 ||
+            img.y > screen.height
+        );
+    };
+    
+    static getRandomEnumKey(objEnum: Object): any {
+        return Object.keys(objEnum)[
+            Phaser.Math.Between(0, Object.keys(objEnum).length - 1)
+        ];
+    }
+
+    static getRandomEnumValue(objEnum: Object): any {
+        return Object.values(objEnum)[
+            Phaser.Math.Between(0, Object.keys(objEnum).length - 1)
+        ];
+    }
 }
 
 export type Range = {
     from: number;
     to: number;
+};
+
+export enum Direction { 
+    LEFT = 'left', 
+    RIGHT = 'right', 
+    UP = 'up', 
+    DOWN = 'down', 
+    FRONT = 'front', 
+    BACK = 'back' 
 };

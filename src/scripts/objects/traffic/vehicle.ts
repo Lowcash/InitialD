@@ -1,13 +1,9 @@
-import Common, { Range } from '../_common/common';
+import Common, { Range, Direction } from '../_common/common';
 
 import ICollidable from '../interfaces/ICollidable'
 import IMovable from '../interfaces/IMovable'
 
-import Map from '../map'
-
-export enum Direction {
-    FRONT = 'front', LEFT = 'left', RIGHT = 'right'
-}
+import Map from '../map/map'
 
 export enum VehicleType {
     AE_86_TRUENO = 'ae_86_trueno', 
@@ -123,6 +119,10 @@ export default class Vehicle implements ICollidable, IMovable {
         this.sprite.setPosition(this.sprite.x + this.mapSpeed + this.speed, this.sprite.y);
     }
 
+    public stop(): void {
+        this.speed = 0;
+    }
+
     public turnLeft() {
         if(!this.isTurning && this.gridPos.y < this.map.getNumRoadChunkLanes(this.gridPos.x) - 1) {
             this.turn(Direction.LEFT, this.turningStrength);
@@ -144,11 +144,7 @@ export default class Vehicle implements ICollidable, IMovable {
     }
 
     public static getRandomVehicle(): VehicleProperties {
-        return vehicles[
-            Object.values(VehicleType)[
-                Phaser.Math.Between(0, Object.keys(VehicleType).length - 1)
-            ]
-        ]
+        return vehicles[Common.getRandomEnumValue(VehicleType)];
     }
 
     private async turn(direction: Direction, velocity: number): Promise<void> {

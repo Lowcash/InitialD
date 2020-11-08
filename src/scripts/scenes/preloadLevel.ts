@@ -40,7 +40,8 @@ export default class PreloadLevel extends Phaser.Scene {
 
     this.load.audio(sourceModel.soundButton.mappingKey, sourceModel.soundButton.sourcePath);
 
-    this.load.image(sourceModel.imageRoadStraight.mappingKey, sourceModel.imageRoadStraight.sourcePath);
+    this.load.image(sourceModel.imageRoadStraight0.mappingKey, sourceModel.imageRoadStraight0.sourcePath);
+    this.load.image(sourceModel.imageRoadStraight1.mappingKey, sourceModel.imageRoadStraight1.sourcePath);
 
     this.load.atlas(
         sourceModel.atlasVehicle.mappingKey,

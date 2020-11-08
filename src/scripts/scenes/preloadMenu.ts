@@ -11,6 +11,8 @@ export default class PreloadMenu extends Phaser.Scene {
         this.load.image(sourceModel.imageLogo.mappingKey, sourceModel.imageLogo.sourcePath);
         this.load.image(sourceModel.imageCity.mappingKey, sourceModel.imageCity.sourcePath);
         this.load.image(sourceModel.imageHill.mappingKey, sourceModel.imageHill.sourcePath);
+        this.load.image(sourceModel.imageForest.mappingKey, sourceModel.imageForest.sourcePath);
+        this.load.image(sourceModel.imageClouds.mappingKey, sourceModel.imageClouds.sourcePath);
 
         this.load.spritesheet(
             sourceModel.spriteArrows.mappingKey, 
@@ -32,7 +34,8 @@ export default class PreloadMenu extends Phaser.Scene {
 
         this.load.audio(sourceModel.soundButton.mappingKey, sourceModel.soundButton.sourcePath);
 
-        this.load.image(sourceModel.imageRoadStraight.mappingKey, sourceModel.imageRoadStraight.sourcePath);
+        this.load.image(sourceModel.imageRoadStraight0.mappingKey, sourceModel.imageRoadStraight0.sourcePath);
+        this.load.image(sourceModel.imageRoadStraight1.mappingKey, sourceModel.imageRoadStraight1.sourcePath);
 
         this.load.atlas(
             sourceModel.atlasVehicle.mappingKey,

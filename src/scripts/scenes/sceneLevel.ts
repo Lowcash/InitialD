@@ -2,7 +2,7 @@ import { sourceModel } from '../models/source'
 import { Controls, SettingsModel } from '../models/settings'
 import TypeGuardHelper from '../objects/_common/typeGuardHelper';
 
-import Map from '../objects/map'
+import Map from '../objects/map/map'
 import Vehicle from '../objects/traffic/vehicle'
 import Traffic from '../objects/traffic/traffic'
 import Reward from '../objects/reward/reward';
@@ -82,7 +82,7 @@ export default class SceneLevel extends Phaser.Scene {
       ).setScale(this.hill.standartScale);
     
     // ----------------------------- Init map ----------------------------- //
-    const roadChunkTex = this.textures.get(sourceModel.imageRoadStraight.mappingKey).getSourceImage();
+    const roadChunkTex = this.textures.get(sourceModel.imageRoadStraight0.mappingKey).getSourceImage();
 
     this.map.object = new Map(
       this,

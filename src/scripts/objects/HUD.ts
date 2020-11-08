@@ -11,7 +11,7 @@ export default class HUD extends Phaser.GameObjects.Graphics {
         this.lineTo(shape.x, shape.y);
         this.closePath();
         this.fillPath();
-
+        
         scene.add.existing(this);
     }
 };

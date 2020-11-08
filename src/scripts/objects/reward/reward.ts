@@ -3,7 +3,7 @@ import TypeGuardHelper from '../_common/typeGuardHelper';
 import { SpriteMappingSized } from '../_common/mappingHelper';
 
 import Coin from './coin'
-import Map from '../map'
+import Map from '../map/map'
 import Vehicle from '../traffic/vehicle';
 
 import IMovable from '../interfaces/IMovable';

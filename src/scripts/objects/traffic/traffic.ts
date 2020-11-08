@@ -1,9 +1,9 @@
-import { Range } from '../_common/common';
+import { Range, Direction } from '../_common/common';
 import TypeGuardHelper from '../_common/typeGuardHelper';
 import { SpriteMapping } from '../_common/mappingHelper';
 
-import Vehicle, { VehicleType, Direction, vehicles } from './vehicle'
-import Map  from '../map'
+import Vehicle, { VehicleType, vehicles } from './vehicle'
+import Map  from '../map/map'
 
 export default class Traffic {
     private readonly scene: Phaser.Scene;
@@ -32,7 +32,7 @@ export default class Traffic {
 
     private availableLanes: Array<number> = [];
 
-    constructor(scene: Phaser.Scene, map: Map, m: boolean = true) {
+    constructor(scene: Phaser.Scene, map: Map) {
         this.scene = scene;
         this.map = map;
 
@@ -163,12 +163,16 @@ export default class Traffic {
 
                     this.explosion.sprite.setVisible(true);
                     this.explosion.sprite.anims.play(this.explosion.key, true);
+                    
+                    if (!this.explosion.sound?.isPlaying) {
+                        this.explosion.sound?.play();
+                    }
 
-                    this.explosion.sound?.play();
+                    vehiclesObject.stop();
 
                     this.map.changeSpeed(1);
                 }
-
+                
                 console.log('GameOver');
             }
         }

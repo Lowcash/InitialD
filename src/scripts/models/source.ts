@@ -10,10 +10,13 @@ class SourceModel {
     imageLogo: SourceMapping;
     imageCity: SourceMapping;
     imageHill: SourceMapping;
+    imageClouds: SourceMapping;
+    imageForest: SourceMapping;
     spriteArrows: SourceMapping;
     spriteStart: SourceMapping;
     soundButton: SourceMapping;
-    imageRoadStraight: SourceMapping;
+    imageRoadStraight0: SourceMapping;
+    imageRoadStraight1: SourceMapping;
     atlasVehicle: SourceMapping;
     spriteExplosion: SourceMapping;
     soundExplosion: SourceMapping;
@@ -33,11 +36,19 @@ export const sourceModel: SourceModel = {
     },
     imageCity: {
         mappingKey: 'image_city',
-        sourcePath: 'assets/img/background/city.jpg'
+        sourcePath: 'assets/img/background/city.png'
     },
     imageHill: {
         mappingKey: 'image_hill',
         sourcePath: 'assets/img/background/hills.png'
+    },
+    imageClouds: {
+        mappingKey: 'image_clouds',
+        sourcePath: 'assets/img/background/clouds.png'
+    },
+    imageForest: {
+        mappingKey: 'image_forest',
+        sourcePath: 'assets/img/background/forest.png'
     },
     spriteArrows: {
         mappingKey: 'sprite_arrows',
@@ -51,9 +62,13 @@ export const sourceModel: SourceModel = {
         mappingKey: 'sound_button',
         sourcePath: 'assets/sound/button.wav'
     },
-    imageRoadStraight: {
-        mappingKey: 'image_road_straight',
-        sourcePath: 'assets/img/map/road_straight_3.png'
+    imageRoadStraight0: {
+        mappingKey: 'image_road_straight_0',
+        sourcePath: 'assets/img/map/road_straight_0.png'
+    },
+    imageRoadStraight1: {
+        mappingKey: 'image_road_straight_1',
+        sourcePath: 'assets/img/map/road_straight_1.png'
     },
     atlasVehicle: {
         mappingKey: 'atlas_vehicles',
