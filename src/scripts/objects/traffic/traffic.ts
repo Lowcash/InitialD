@@ -100,7 +100,8 @@ export default class Traffic {
         )
             .setScale(this.map.getPerspectiveScale(_posX, _posY))
             .setOrigin(0.5, 1.0)
-            .setDepth(this.map.getNumRoadChunkLanes(_posX) - _posY);
+            //.setDepth(this.map.getNumRoadChunkLanes(_posX) - _posY);
+            .setDepth(999);
         
         const vehicle = new Vehicle(
             this.scene,

@@ -1,5 +1,5 @@
-import IMovable from './interfaces/IMovable'
-import { Mapping } from './_common/mappingHelper';
+import IMovable from '../interfaces/IMovable'
+import { Mapping } from '../_common/mappingHelper';
 
 export interface BackgroundTileSpriteMapping extends Mapping {
     tileSprite?: BackgroundTileSprite;

@@ -2,7 +2,7 @@ import { sourceModel } from '../models/source'
 
 export default class PreloadMenu extends Phaser.Scene {
     constructor() {
-      super({ key: 'PreloadMenu' })
+        super({ key: 'PreloadMenu' })
     }
 
     private preload(): void {
@@ -15,20 +15,20 @@ export default class PreloadMenu extends Phaser.Scene {
         this.load.image(sourceModel.imageClouds.mappingKey, sourceModel.imageClouds.sourcePath);
 
         this.load.spritesheet(
-            sourceModel.spriteArrows.mappingKey, 
-            sourceModel.spriteArrows.sourcePath, 
-            { 
-                frameWidth: 190, 
-                frameHeight: 76 
+            sourceModel.spriteArrows.mappingKey,
+            sourceModel.spriteArrows.sourcePath,
+            {
+                frameWidth: 190,
+                frameHeight: 76
             }
         );
 
         this.load.spritesheet(
-            sourceModel.spriteStart.mappingKey, 
-            sourceModel.spriteStart.sourcePath, 
-            { 
-                frameWidth: 191, 
-                frameHeight: 69 
+            sourceModel.spriteStart.mappingKey,
+            sourceModel.spriteStart.sourcePath,
+            {
+                frameWidth: 191,
+                frameHeight: 69
             }
         );
 
@@ -41,6 +41,15 @@ export default class PreloadMenu extends Phaser.Scene {
             sourceModel.atlasVehicle.mappingKey,
             sourceModel.atlasVehicle.sourcePath,
             sourceModel.atlasVehicle.sourceMapperPath
+        );
+
+        this.load.spritesheet(
+            sourceModel.spriteExplosion.mappingKey,
+            sourceModel.spriteExplosion.sourcePath,
+            {
+                frameWidth: 17,
+                frameHeight: 17
+            }
         );
     }
 

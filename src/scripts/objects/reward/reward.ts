@@ -62,7 +62,13 @@ export default class Reward implements IMovable {
             repeat: -1
         });
 
-        this.generateRandomCoins(numCoinsToGenerate, { from: 3, to: this.map.getNumRoadChunks() - 1 }); 
+        this.generateRandomCoins(
+            numCoinsToGenerate, 
+            { 
+                from: this.map.getNumRoadChunks() - 2,
+                to: this.map.getNumRoadChunks() - 1 
+            }
+        ); 
 
         this.scene.events.on('onCoinCollided', (id: string) => {
             this.handleCoinCollided(id);
@@ -87,7 +93,8 @@ export default class Reward implements IMovable {
                 this.map.getChunkCenter(randomX).x, 
                 this.map.getLanePosition(randomX, randomY),
                 this.coin.mappingKey
-            ).setOrigin(0.5, 1.0)
+            )
+             .setOrigin(0.5, 1.0)
              .setScale(this.scale)
              .setDepth(this.depthLayer);
         
@@ -113,7 +120,12 @@ export default class Reward implements IMovable {
 
     public generateRandomCoins(numCoins: number, range: Range): void {
         for (let i = 0; i < numCoins; ++i) {
-            this.generateCoin({ from: range.from, to: range.to });
+            this.generateCoin(
+                { 
+                    from: range.from, 
+                    to: range.to 
+                }
+            );
 
             this.coins.numCreatedCoins++;
         }
@@ -153,6 +165,12 @@ export default class Reward implements IMovable {
         delete this.coins.objectMapper[id];
         delete this.coins.spriteMapper[id];
 
-        this.generateRandomCoins(1, { from: 8, to: this.map.getNumRoadChunks() - 1});
+        this.generateRandomCoins(
+            1, 
+            { 
+                from: 8, 
+                to: this.map.getNumRoadChunks() - 1
+            }
+        );
     }
 };

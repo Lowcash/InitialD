@@ -37,6 +37,10 @@ export default class Common {
             Phaser.Math.Between(0, Object.keys(objEnum).length - 1)
         ];
     }
+
+    // static getOriginMappingCoords(origin: Origin): Phaser.Math.Vector2 {
+    //     return
+    // }
 }
 
 export type Range = {
@@ -51,4 +55,16 @@ export enum Direction {
     DOWN = 'down', 
     FRONT = 'front', 
     BACK = 'back' 
+};
+
+export enum Origin {
+    UP_LEFT_CORNER = 0x000011,
+    UP_RIGHT_CORNER = 0x000010,
+    DOWN_LEFT_CORNR = 0x000001,
+    DOWN_RIGHT_CORNER = 0x000000,
+    CENTER = 0x000100
+};
+
+export enum LayerIDX {
+    GUI = 999
 };

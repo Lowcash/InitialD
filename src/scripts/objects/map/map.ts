@@ -8,8 +8,6 @@ export default class Map implements IMovable {
     private readonly scene: Phaser.Scene;
     
     private readonly depthLayer: number;
-    
-    private readonly chunkScale: number;
 
     private mapXOffset: number;
     private mapYOffset: number;
@@ -26,12 +24,11 @@ export default class Map implements IMovable {
 
     speed: number = 0;
 
-    constructor(scene: Phaser.Scene, depthLayer: number, mapStartX: number, mapStartY, chunkScale: number = 5, numChunkToGenerate: number = 10) {
+    constructor(scene: Phaser.Scene, depthLayer: number, mapStartX: number, mapStartY, numChunkToGenerate: number = 10) {
         this.scene = scene;
 
         this.depthLayer = depthLayer;
-        
-        this.chunkScale = chunkScale;
+    
 
         this.mapXOffset = mapStartX;
         this.mapYOffset = mapStartY;
@@ -79,11 +76,11 @@ export default class Map implements IMovable {
 
     public getLanePosition(roadChunkId: number, laneId: number): number {
         return this.road.images[
-            roadChunkId].getBottomCenter().y - (this.road.properties[roadChunkId].lanes[laneId].position * this.chunkScale);
+            roadChunkId].getBottomCenter().y - (this.road.properties[roadChunkId].lanes[laneId].position);
     }
 
     public getPerspectiveScale(roadChunkId: number, laneId: number): number {
-        return this.road.properties[roadChunkId].lanes[laneId].perspectiveScale * this.chunkScale;
+        return this.road.properties[roadChunkId].lanes[laneId].perspectiveScale;
     }
 
     public getNumRoadChunks(): number {
@@ -112,7 +109,7 @@ export default class Map implements IMovable {
         let x = this.mapXOffset;
         
         if (this.road.images.length > 0) {
-            x = (this.road.images[this.road.images.length - 1].x + this.road.images[this.road.images.length - 1].width * this.chunkScale);
+            x = (this.road.images[this.road.images.length - 1].x + this.road.images[this.road.images.length - 1].width);
         }
 
         this.road.images.push(
@@ -120,7 +117,6 @@ export default class Map implements IMovable {
                 x, 
                 this.mapYOffset, 
                 chunk.type)
-                    .setScale(this.chunkScale)
                     .setOrigin(0.0, 1.0)
                     .setDepth(this.depthLayer)
         );
