@@ -13,7 +13,7 @@ import Map from '../objects/map/map'
 import Vehicle from '../objects/traffic/vehicle'
 import Traffic from '../objects/traffic/traffic'
 import Reward from '../objects/reward/reward';
-import RewardHUD from '../objects/reward/hud';
+import ScoreHUD, { AppendFrom, ScoreHUDExtended } from '../objects/reward/hud';
 import { LayerIDX } from '../objects/_common/common';
 import BackgroundTileSpriteExtended from '../objects/tilesprites/backgroundTileSpriteExtended';
 
@@ -118,13 +118,14 @@ export default class SceneLevel extends Phaser.Scene {
   } = {
       depth: 9,
       screenOffsetMult: new Phaser.Math.Vector2(0, 1),
-      startNumChunks: 6,
+      startNumChunks: 8,
       moveSpeed: -1.0
     };
 
   private readonly reward: {
     object?: Reward;
-    hud?: RewardHUD;
+    scoreHUD?: ScoreHUDExtended;
+    highScoreHUD?: ScoreHUD;
 
     startNumCoins: number;
     zeroPadding: number;
@@ -155,6 +156,7 @@ export default class SceneLevel extends Phaser.Scene {
 
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
 
+  private prevHighScore: number = 0;
   private speedUpFunction: any;
   private isGameOver: boolean = false;
 
@@ -168,12 +170,6 @@ export default class SceneLevel extends Phaser.Scene {
 
   private create(): void {
     this.prepareObjects();
-
-    this.map.object?.changeSpeed(this.map.moveSpeed);
-
-    this.speedUpFunction = setInterval(() => {
-      this.map.object?.changeSpeed(this.map.object.getSpeed() - 1);
-    }, 1000);
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -192,6 +188,12 @@ export default class SceneLevel extends Phaser.Scene {
     if (this.menuSettings.deviceType === DeviceType.MOBILE) {
       this.prepareControls();
     }
+
+    this.map.object?.changeSpeed(this.map.moveSpeed);
+
+    this.speedUpFunction = setInterval(() => {
+        this.map.object?.changeSpeed(this.map.object.getSpeed() - 0.1);
+    }, 100);
 
     this.isGameOver = false;
   }
@@ -236,17 +238,15 @@ export default class SceneLevel extends Phaser.Scene {
 
       this.stop(0.1);
 
-      console.log("GameOver");
+      if (this.reward.object) {
+        const earnedPoints = this.reward.object.getEarnedPoints();
 
-      const score = {
-        scr: 5
-      };
+        if (earnedPoints > this.prevHighScore) {
+          localStorage.setItem('HighScore', JSON.stringify(earnedPoints));
 
-      // fs.writeFile("record.json", 'score', () => {
-      //     // if (err) {
-      //     //     console.log(err);
-      //     // }
-      // });
+          this.reward.highScoreHUD?.updateScore(earnedPoints);
+        }
+      }
     }
   }
 
@@ -283,12 +283,6 @@ export default class SceneLevel extends Phaser.Scene {
     //this.scene.restart();
 
     this.prepareObjects();
-
-    this.map.object?.changeSpeed(this.map.moveSpeed);
-
-    this.speedUpFunction = setInterval(() => {
-      this.map.object?.changeSpeed(this.map.object.getSpeed() - 1);
-    }, 1000);
   }
 
   private handlePressedLControlButton(context: any): void {
@@ -414,11 +408,17 @@ export default class SceneLevel extends Phaser.Scene {
   }
 
   private prepareReward(): void {
+    const highScore = localStorage.getItem('HighScore');
+
     if (this.reward.object) {
       this.reward.object.generateReward(this.reward.startNumCoins);
 
       if (this.traffic.player) {
         this.reward.object.attachPlayer(this.traffic.player);
+      }
+
+      if (highScore) {
+        this.reward.highScoreHUD?.updateScore(JSON.parse(highScore) as number);
       }
 
       return;
@@ -434,13 +434,31 @@ export default class SceneLevel extends Phaser.Scene {
       );
     }
 
-    this.reward.hud = new RewardHUD(
+    this.reward.scoreHUD = new ScoreHUDExtended(
       this,
+      'SCORE',
+      AppendFrom.LEFT,
       this.reward.color,
       this.reward.fontSize,
       this.reward.textPadding,
       this.reward.zeroPadding
     );
+
+    this.reward.highScoreHUD = new ScoreHUD(
+      this,
+      'HIGHEST SCORE',
+      AppendFrom.RIGHT,
+      this.reward.color,
+      this.reward.fontSize,
+      this.reward.textPadding,
+      this.reward.zeroPadding
+    );
+
+    if (highScore) {
+      this.reward.highScoreHUD.updateScore(JSON.parse(highScore) as number);
+    } else {
+      localStorage.setItem('HighScore', JSON.stringify(this.prevHighScore))
+    }
   }
 
   private prepareTraffic(): void {
@@ -487,8 +505,10 @@ export default class SceneLevel extends Phaser.Scene {
     this.map.object = new Map(
       this,
       this.map.depth,
-      this.cameras.main.width * this.map.screenOffsetMult!.x ?? 1,
-      this.cameras.main.height * this.map.screenOffsetMult!.y ?? 1,
+      new Phaser.Math.Vector2(
+        this.cameras.main.width * (this.map.screenOffsetMult?.x ?? 1),
+        this.cameras.main.height * (this.map.screenOffsetMult?.y ?? 1)
+      ),
       this.map.startNumChunks
     );
   }

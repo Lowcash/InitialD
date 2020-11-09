@@ -149,7 +149,7 @@ export default class SceneMenu extends Phaser.Scene {
   } = {
       depth: 9,
       screenOffsetMult: new Phaser.Math.Vector2(0, 1),
-      startNumChunks: 5,
+      startNumChunks: 8,
       moveSpeed: -1.0
     };
   
@@ -204,8 +204,10 @@ export default class SceneMenu extends Phaser.Scene {
     this.map.object = new Map(
       this,
       this.map.depth,
-      this.cameras.main.width * this.map.screenOffsetMult!.x ?? 1,
-      this.cameras.main.height * this.map.screenOffsetMult!.y ?? 1,
+      new Phaser.Math.Vector2(
+        this.cameras.main.width * this.map.screenOffsetMult!.x ?? 1,
+        this.cameras.main.height * this.map.screenOffsetMult!.y ?? 1
+      ),
       this.map.startNumChunks
     );
   }
@@ -325,7 +327,7 @@ export default class SceneMenu extends Phaser.Scene {
       this.controls.text,
       this.controls.fontSize
     );
-    controlsText.setDepth(LayerIDX.GUI);
+    controlsText.setDepth(LayerIDX.GUI + 1);
 
     const hud = new HUD(
       this,
@@ -400,7 +402,7 @@ export default class SceneMenu extends Phaser.Scene {
       this.vehicles.text,
       this.vehicles.fontSize
     );
-    vehiclesText.setDepth(999);
+    vehiclesText.setDepth(LayerIDX.GUI + 1);
 
     const hud = new HUD(
       this,

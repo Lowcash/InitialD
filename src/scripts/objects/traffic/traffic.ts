@@ -105,10 +105,10 @@ export default class Traffic {
         this.vehicles.spriteMapper = {};
     }
 
-    public generateVehicle(vehicleType: VehicleType, posX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = []): Vehicle {
-        const _posX = TypeGuardHelper.isRange(posX) ?
-            this.map.getRandomRoadIdx(posX.from, posX.to) :
-            posX;
+    public generateVehicle(vehicleType: VehicleType, gridPosX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = []): Vehicle {
+        const _posX = TypeGuardHelper.isRange(gridPosX) ?
+            this.map.getRandomRoadIdx(gridPosX.from, gridPosX.to) :
+            gridPosX;
         
         // const availableLaneIdx = Phaser.Math.Between(0, this.availableLanes.length - 1);
         // const _posY = this.availableLanes[availableLaneIdx];
@@ -120,7 +120,7 @@ export default class Traffic {
         const _posY = this.map.getRandomLaneIdx(_posX);
         
         this.vehicles.spriteMapper[this.vehicles.numCreatedVehicles.toString()] = this.scene.physics.add.sprite(
-            TypeGuardHelper.isRange(posX) ? this.map.getChunkCenter(_posX).x : _posX, 
+            TypeGuardHelper.isRange(gridPosX) ? this.map.getChunkCenter(_posX).x : _posX, 
             this.map.getLanePosition(_posX, _posY), 
             'atlas_vehicles',
             `${vehicleType.toString()}/${Direction.FRONT.toString()}`

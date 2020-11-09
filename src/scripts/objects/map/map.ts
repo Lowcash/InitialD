@@ -9,10 +9,7 @@ export default class Map implements IMovable {
     
     private readonly depthLayer: number;
 
-    private mapXOffset: number;
-    private mapYOffset: number;
-
-    private road: {
+    private readonly road: {
         images: Array<Phaser.GameObjects.Image>;
         properties: Array<RoadChunkProperties>;
 
@@ -22,15 +19,18 @@ export default class Map implements IMovable {
         properties: []
     };
 
+    private readonly defaultMapOffset: Phaser.Math.Vector2;
+    private mapOffset: Phaser.Math.Vector2;
+
     speed: number = 0;
 
-    constructor(scene: Phaser.Scene, depthLayer: number, mapStartX: number, mapStartY, numChunkToGenerate: number) {
+    constructor(scene: Phaser.Scene, depthLayer: number, mapStartPos: Phaser.Math.Vector2, numChunkToGenerate: number) {
         this.scene = scene;
 
         this.depthLayer = depthLayer;
 
-        this.mapXOffset = mapStartX;
-        this.mapYOffset = mapStartY;
+        this.defaultMapOffset = new Phaser.Math.Vector2(mapStartPos);
+        this.mapOffset = mapStartPos;
 
         this.generateMap(numChunkToGenerate);
     }
@@ -48,7 +48,7 @@ export default class Map implements IMovable {
     public move(): void {
         this.road.group?.incX(this.speed);
 
-        if (Common.isImgOutOfScreen(this.road.images[0], this.scene.cameras.main)) {
+        if (Common.isImgOutOfScreen(this.road.images[1], this.scene.cameras.main)) {
             this.shiftChunk();
 
             this.appendChunk(Map.getRandomRoadChunk());
@@ -101,6 +101,9 @@ export default class Map implements IMovable {
     }
 
     private clearMap(): void {
+        this.mapOffset.x = this.defaultMapOffset.x;
+        this.mapOffset.y = this.defaultMapOffset.y;
+
         this.road.group?.clear(true, true);
 
         this.road.properties = [];
@@ -118,16 +121,17 @@ export default class Map implements IMovable {
     }
 
     private appendChunk(chunk: RoadChunkProperties): void {
-        let x = this.mapXOffset;
-        
-        if (this.road.images.length > 0) {
-            x = (this.road.images[this.road.images.length - 1].x + this.road.images[this.road.images.length - 1].width);
+        const lastChunk: Phaser.GameObjects.Image = this.road.images[this.road.images.length - 1];
+
+        if (lastChunk) {
+            this.mapOffset.x = lastChunk.x + lastChunk.width;
+            this.mapOffset.y = lastChunk.y;
         }
 
         this.road.images.push(
             this.scene.add.image(
-                x, 
-                this.mapYOffset, 
+                this.mapOffset.x, 
+                this.mapOffset.y, 
                 chunk.type)
                     .setOrigin(0.0, 1.0)
                     .setDepth(this.depthLayer)

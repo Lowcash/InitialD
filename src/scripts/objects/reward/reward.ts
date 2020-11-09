@@ -75,7 +75,11 @@ export default class Reward implements IMovable {
         });
     }
 
-    public generateReward(numCoinsToGenerate: number = 0): void {
+    public getEarnedPoints(): number {
+        return this.earnedPoints;
+    }
+
+    public generateReward(numCoinsToGenerate: number): void {
         this.clearReward();
 
         this.generateRandomCoins(
@@ -91,7 +95,7 @@ export default class Reward implements IMovable {
         this.player = player;
 
         const playerSprite = this.player.getSprite();
-
+        
         for (const o of Object.values(this.coins.objectMapper)) {
             o.registerCollision(playerSprite);
         }
