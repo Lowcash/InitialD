@@ -4,6 +4,7 @@ import { SpriteMapping } from '../_common/mappingHelper';
 
 import Vehicle, { VehicleType, vehicles } from './vehicle'
 import Map  from '../map/map'
+import { sourceModel } from '../../models/source';
 
 export default class Traffic {
     private readonly scene: Phaser.Scene;
@@ -11,9 +12,11 @@ export default class Traffic {
 
     private readonly explosion: {
         sound?: Phaser.Sound.BaseSound;
+        soundKey: string;
     } & SpriteMapping = {
         key: 'explosion',
-        mappingKey: 'sprite_explosion'
+        mappingKey: sourceModel.spriteExplosion.mappingKey,
+        soundKey: sourceModel.soundExplosion.mappingKey
     };
 
     private vehicles: {
@@ -28,13 +31,17 @@ export default class Traffic {
         numCreatedVehicles: 0
     };
 
+    private readonly depthLayer: number;
+
     private player?: Vehicle;
 
     private availableLanes: Array<number> = [];
 
-    constructor(scene: Phaser.Scene, map: Map) {
+    constructor(scene: Phaser.Scene, map: Map, depth: number) {
         this.scene = scene;
         this.map = map;
+
+        this.depthLayer = depth;
 
         this.explosion.sprite = 
             this.scene.physics.add.sprite(0, 0, this.explosion.mappingKey)
@@ -51,8 +58,8 @@ export default class Traffic {
             hideOnComplete: true
         });
 
-        if (this.scene.cache.audio.get('sound_explosion')) {
-            this.explosion.sound = this.scene.sound.add('sound_explosion', {} );
+        if (this.scene.cache.audio.get(this.explosion.soundKey)) {
+            this.explosion.sound = this.scene.sound.add(this.explosion.soundKey, {} );
         }
 
         const numLastChunkLanes = this.map.getNumRoadChunkLanes(this.map.getNumRoadChunks() - 1);
@@ -72,25 +79,45 @@ export default class Traffic {
         });
     }
 
-    public clearTraffic(): void {
-        for (const o of Object.values(this.vehicles.objectMapper)) {
-            o.destroyVehicle();
+    public generateTraffic(): void {
+        this.clearTraffic();
+
+        const numLanes = this.map.getNumRoadChunkLanes(0);
+
+        for (let i = 0; i < numLanes - 1; ++i) {
+            this.generateVehicle(
+                Vehicle.getRandomVehicle().type,
+                {
+                from: 1,
+                to: (this.map.getNumRoadChunks() ?? 2) - 1
+                },
+                [ ]
+            );
         }
     }
 
-    public generateVehicle(vehicleType: VehicleType, posX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], depthAdd: number = 0, istakeLane: boolean = true): Vehicle {
+    public clearTraffic(): void {
+        for (const o of Object.values(this.vehicles.objectMapper)) {
+            o.destroyVehicle()
+        }
+        
+        this.vehicles.objectMapper = {};
+        this.vehicles.spriteMapper = {};
+    }
+
+    public generateVehicle(vehicleType: VehicleType, posX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = []): Vehicle {
         const _posX = TypeGuardHelper.isRange(posX) ?
             this.map.getRandomRoadIdx(posX.from, posX.to) :
             posX;
         
-        const availableLaneIdx = Phaser.Math.Between(0, this.availableLanes.length - 1);
-        const _posY = this.availableLanes[availableLaneIdx];
+        // const availableLaneIdx = Phaser.Math.Between(0, this.availableLanes.length - 1);
+        // const _posY = this.availableLanes[availableLaneIdx];
 
-        if (istakeLane) {
-            this.availableLanes.splice(availableLaneIdx, 1);
-        }
+        // if (istakeLane) {
+        //     this.availableLanes.splice(availableLaneIdx, 1);
+        // }
         
-        //const randomY = this.map.getRandomLaneIdx(randomX);
+        const _posY = this.map.getRandomLaneIdx(_posX);
         
         this.vehicles.spriteMapper[this.vehicles.numCreatedVehicles.toString()] = this.scene.physics.add.sprite(
             TypeGuardHelper.isRange(posX) ? this.map.getChunkCenter(_posX).x : _posX, 
@@ -100,7 +127,7 @@ export default class Traffic {
         )
             .setScale(this.map.getPerspectiveScale(_posX, _posY))
             .setOrigin(0.0, 1.0)
-            .setDepth(depthAdd + this.map.getNumRoadChunkLanes(_posX) - _posY);
+            .setDepth(this.depthLayer + this.map.getNumRoadChunkLanes(_posX) - _posY);
         
         const vehicle = new Vehicle(
             this.scene,
@@ -124,6 +151,12 @@ export default class Traffic {
 
     public attachPlayer(player: Vehicle): void {
         this.player = player;
+
+        const playerSprite = this.player.getSprite();
+
+        for (const o of Object.values(this.vehicles.objectMapper)) {
+            o.registerCollision(playerSprite);
+        }
     }
 
     public move(): void {
@@ -152,7 +185,7 @@ export default class Traffic {
         const vehiclesObject = this.vehicles.objectMapper[id];
 
         if(vehiclesObject) {
-            if (this.player?.getLane() === vehiclesObject.getLane()) {
+            if (this.player?.getLane() === vehiclesObject?.getLane()) {
                 if (TypeGuardHelper.isSprite(this.explosion.sprite)) {
                     const playerPos = this.player.getSprite();
 
@@ -177,23 +210,24 @@ export default class Traffic {
     }
 
     private handleVehicleDestroyed(id: string): void {
-        console.log(`Vehicle #${id} is history!`);
+        if (this.vehicles.objectMapper[id]) {
+            console.log(`Vehicle #${id} is history!`);
 
-        this.availableLanes.push(this.vehicles.objectMapper[id].getLane());
+            this.availableLanes.push(this.vehicles.objectMapper[id].getLane());
 
-        delete this.vehicles.objectMapper[id];
-        delete this.vehicles.spriteMapper[id];
-        
-        if (this.player) {
-            this.generateVehicle(
-                Vehicle.getRandomVehicle().type, 
-                { 
-                    from: this.map.getNumRoadChunks() - 2, 
-                    to: this.map.getNumRoadChunks() - 1
-                },
-                [ this.player.getSprite() ],
-                9
-            );
+            delete this.vehicles.objectMapper[id];
+            delete this.vehicles.spriteMapper[id];
+            
+            if (this.player) {
+                this.generateVehicle(
+                    Vehicle.getRandomVehicle().type, 
+                    { 
+                        from: this.map.getNumRoadChunks() - 2, 
+                        to: this.map.getNumRoadChunks() - 1
+                    },
+                    [ this.player.getSprite() ]
+                );
+            }
         }
     }
 };

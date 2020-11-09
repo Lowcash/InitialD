@@ -7,11 +7,11 @@ import Map from '../map/map'
 import Vehicle from '../traffic/vehicle';
 
 import IMovable from '../interfaces/IMovable';
+import { sourceModel } from '../../models/source';
 
 export default class Reward implements IMovable {
     private readonly scene: Phaser.Scene;
     private readonly map: Map;
-    private readonly player: Vehicle;
 
     private readonly depthLayer: number;
 
@@ -19,13 +19,13 @@ export default class Reward implements IMovable {
         soundKey: string;
     } & SpriteMappingSized = {
         key: 'coin',
-        mappingKey: 'sprite_coin',
-        soundKey: 'sound_coin',
+        mappingKey: sourceModel.spriteCoin.mappingKey,
+        soundKey: sourceModel.soundCoin.mappingKey,
 
         size: 32
     };
 
-    private coins: {
+    private readonly coins: {
         objectMapper: { [id: string]: Coin };
         spriteMapper: { [id: string]: Phaser.Physics.Arcade.Sprite; };
         
@@ -40,11 +40,13 @@ export default class Reward implements IMovable {
         numCreatedCoins: 0
     };
 
+    private player: Vehicle;
+
     private earnedPoints: number = 0;
     
     speed: number = 0;
 
-    constructor(scene: Phaser.Scene, map: Map, player: Vehicle, depthLayer: number = 0, numCoinsToGenerate: number = 0) {
+    constructor(scene: Phaser.Scene, map: Map, player: Vehicle, depthLayer: number = 0, numCoinsToGenerate: number) {
         this.scene = scene;
         this.map = map;
         this.player = player;
@@ -60,13 +62,7 @@ export default class Reward implements IMovable {
             repeat: -1
         });
 
-        this.generateRandomCoins(
-            numCoinsToGenerate, 
-            { 
-                from: this.map.getNumRoadChunks() - 2,
-                to: this.map.getNumRoadChunks() - 1 
-            }
-        ); 
+       this.generateReward(numCoinsToGenerate);
 
         this.scene.events.on('onCoinCollided', (id: string) => {
             this.handleCoinCollided(id);
@@ -79,21 +75,43 @@ export default class Reward implements IMovable {
         });
     }
 
+    public generateReward(numCoinsToGenerate: number = 0): void {
+        this.clearReward();
+
+        this.generateRandomCoins(
+            numCoinsToGenerate, 
+            { 
+                from: this.map.getNumRoadChunks() - 2,
+                to: this.map.getNumRoadChunks() - 1 
+            }
+        ); 
+    }
+
+    public attachPlayer(player: Vehicle): void {
+        this.player = player;
+
+        const playerSprite = this.player.getSprite();
+
+        for (const o of Object.values(this.coins.objectMapper)) {
+            o.registerCollision(playerSprite);
+        }
+    }
+
     public generateCoin(gridPosX: Range | number): void {
-        const randomX = TypeGuardHelper.isRange(gridPosX) ?
+        const _posX = TypeGuardHelper.isRange(gridPosX) ?
             this.map.getRandomRoadIdx(gridPosX.from, gridPosX.to) :
             this.map.getRandomRoadIdx(gridPosX);
         
-        const randomY = this.map.getRandomLaneIdx(randomX);
+        const _posY = this.map.getRandomLaneIdx(_posX);
 
         this.coin.sprite = 
             this.scene.physics.add.sprite(
-                this.map.getChunkCenter(randomX).x, 
-                this.map.getLanePosition(randomX, randomY),
+                this.map.getChunkCenter(_posX).x, 
+                this.map.getLanePosition(_posX, _posY),
                 this.coin.mappingKey
             )
              .setOrigin(0.5, 1.0)
-             .setDepth(999);
+             .setDepth(this.depthLayer + this.map.getNumRoadChunkLanes(_posX) - _posY);
         
         this.coin.sprite?.anims.play(this.coin.key, true);
         
@@ -102,7 +120,7 @@ export default class Reward implements IMovable {
                 this.scene, 
                 this.coins.numCreatedCoins.toString(), 
                 this.coin.sprite,
-                new Phaser.Math.Vector2(randomX, randomY),
+                new Phaser.Math.Vector2(_posX, _posY),
                 [ this.player.getSprite() ] 
             );
         
@@ -132,6 +150,19 @@ export default class Reward implements IMovable {
 
     public move(): void {
         this.coins.group?.incX(this.speed);
+    }
+
+    private clearReward(): void {
+        this.coins.numCreatedCoins = 0;
+
+        this.earnedPoints = 0;
+
+        this.scene.events.emit('onScoreChanged', this.earnedPoints);
+
+        this.coins.group?.clear(true, true);
+
+        this.coins.objectMapper = {};
+        this.coins.spriteMapper = {};
     }
 
     private handleMapSpeedChanged(speed: number) {

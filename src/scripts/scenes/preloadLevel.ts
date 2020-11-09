@@ -40,13 +40,15 @@ export default class PreloadLevel extends Phaser.Scene {
     );
     
     this.load.spritesheet(
-      sourceModel.spriteGameOverStart.mappingKey,
-      sourceModel.spriteGameOverStart.sourcePath,
+      sourceModel.spriteStart.mappingKey,
+      sourceModel.spriteStart.sourcePath,
       {
-        frameWidth: 319,
-        frameHeight: 68
+          frameWidth: 191,
+          frameHeight: 69
       }
-    );
+  );
+
+    this.load.image(sourceModel.imageGameOver.mappingKey, sourceModel.imageGameOver.sourcePath);
 
     this.load.audio(sourceModel.soundButton.mappingKey, sourceModel.soundButton.sourcePath);
 

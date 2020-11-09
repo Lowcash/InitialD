@@ -24,14 +24,19 @@ export default class Map implements IMovable {
 
     speed: number = 0;
 
-    constructor(scene: Phaser.Scene, depthLayer: number, mapStartX: number, mapStartY, numChunkToGenerate: number = 10) {
+    constructor(scene: Phaser.Scene, depthLayer: number, mapStartX: number, mapStartY, numChunkToGenerate: number) {
         this.scene = scene;
 
         this.depthLayer = depthLayer;
-    
 
         this.mapXOffset = mapStartX;
         this.mapYOffset = mapStartY;
+
+        this.generateMap(numChunkToGenerate);
+    }
+
+    public generateMap(numChunkToGenerate: number = 10): void {
+        this.clearMap();
 
         for (let i = 0; i < numChunkToGenerate; ++i) {
             this.appendChunk(Map.getRandomRoadChunk());
@@ -39,7 +44,7 @@ export default class Map implements IMovable {
 
         this.registerChunks();
     }
-    
+
     public move(): void {
         this.road.group?.incX(this.speed);
 
@@ -93,6 +98,13 @@ export default class Map implements IMovable {
 
     public static getRandomRoadChunk(): RoadChunkProperties {
         return roadChunks[Common.getRandomEnumValue(ChunkType)];
+    }
+
+    private clearMap(): void {
+        this.road.group?.clear(true, true);
+
+        this.road.properties = [];
+        this.road.images = [];
     }
 
     private shiftChunk(): void {

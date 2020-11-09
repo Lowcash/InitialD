@@ -152,8 +152,14 @@ export default class SceneMenu extends Phaser.Scene {
       startNumChunks: 5,
       moveSpeed: -1.0
     };
+  
+  private readonly traffic: {
+    object?: Traffic;
 
-  private traffic: Traffic;
+    depth: number;
+  } = {
+    depth: this.map.depth
+  };
 
   constructor() {
     super({ key: 'SceneMenu' })
@@ -184,9 +190,10 @@ export default class SceneMenu extends Phaser.Scene {
   //#region Prepares
   private prepareTraffic(): void {
     if (this.map.object) {
-      this.traffic = new Traffic(
+      this.traffic.object = new Traffic(
         this,
-        this.map.object
+        this.map.object,
+        this.traffic.depth
       );
 
       this.selectVehicle(this.vehicles.selectedVehicle, `${this.vehicles.selectedVehicle}/${Direction.RIGHT}`);
@@ -206,78 +213,88 @@ export default class SceneMenu extends Phaser.Scene {
   private prepareBackground(): void {
     //this.add.image(this.cameras.main.centerX, 100, sourceModel.imageLogo.mappingKey);
 
-    if (this.map.object) {
+    if (!this.city.tileSprite) {
       this.city.tileSprite =
-      new BackgroundTileSpriteExtended(
-        this,
-        this.city.mappingKey,
-        this.city.moveSpeed,
-        this.city.outerScale,
-        this.city.innerScale,
-        this.city.depth,
-        this.city.origin,
-        this.city.screenOffsetMult
-      );
+        new BackgroundTileSpriteExtended(
+          this,
+          this.city.mappingKey,
+          this.city.moveSpeed,
+          this.city.outerScale,
+          this.city.innerScale,
+          this.city.depth,
+          this.city.origin,
+          this.city.screenOffsetMult
+        );
+    }
 
-    this.hill.tileSprite =
-      new BackgroundTileSpriteExtended(
-        this,
-        this.hill.mappingKey,
-        this.hill.moveSpeed,
-        this.hill.outerScale,
-        this.hill.innerScale,
-        this.hill.depth,
-        this.hill.origin,
-        this.hill.screenOffsetMult
-      );
+    if (!this.hill.tileSprite) {
+      this.hill.tileSprite =
+        new BackgroundTileSpriteExtended(
+          this,
+          this.hill.mappingKey,
+          this.hill.moveSpeed,
+          this.hill.outerScale,
+          this.hill.innerScale,
+          this.hill.depth,
+          this.hill.origin,
+          this.hill.screenOffsetMult
+        );
+    }
 
-    this.clouds.tileSprite =
-      new BackgroundTileSpriteExtended(
-        this,
-        this.clouds.mappingKey,
-        this.clouds.moveSpeed,
-        this.clouds.outerScale,
-        this.clouds.innerScale,
-        this.clouds.depth,
-        this.clouds.origin,
-        this.clouds.screenOffsetMult
-      );
+    if (!this.clouds.tileSprite) {
+      this.clouds.tileSprite =
+        new BackgroundTileSpriteExtended(
+          this,
+          this.clouds.mappingKey,
+          this.clouds.moveSpeed,
+          this.clouds.outerScale,
+          this.clouds.innerScale,
+          this.clouds.depth,
+          this.clouds.origin,
+          this.clouds.screenOffsetMult
+        );
+    }
 
-    this.nearForest.tileSprite =
-      new BackgroundTileSpriteExtended(
-        this,
-        this.nearForest.mappingKey,
-        this.nearForest.moveSpeed,
-        this.nearForest.outerScale,
-        this.nearForest.innerScale,
-        this.nearForest.depth,
-        this.nearForest.origin,
-        this.nearForest.screenOffsetMult
-      );
+    if (!this.nearForest.tileSprite) {
+      this.nearForest.tileSprite =
+        new BackgroundTileSpriteExtended(
+          this,
+          this.nearForest.mappingKey,
+          this.nearForest.moveSpeed,
+          this.nearForest.outerScale,
+          this.nearForest.innerScale,
+          this.nearForest.depth,
+          this.nearForest.origin,
+          this.nearForest.screenOffsetMult
+        );
+    }
 
-    this.farForest.tileSprite =
-      new BackgroundTileSpriteExtended(
-        this,
-        this.farForest.mappingKey,
-        this.farForest.moveSpeed,
-        this.farForest.outerScale,
-        this.farForest.innerScale,
-        this.farForest.depth,
-        this.farForest.origin,
-        this.farForest.screenOffsetMult
-      );
+    if (!this.farForest.tileSprite) {
+      this.farForest.tileSprite =
+        new BackgroundTileSpriteExtended(
+          this,
+          this.farForest.mappingKey,
+          this.farForest.moveSpeed,
+          this.farForest.outerScale,
+          this.farForest.innerScale,
+          this.farForest.depth,
+          this.farForest.origin,
+          this.farForest.screenOffsetMult
+        );
+    }
 
-    this.farthestForest.tileSprite =
-      new BackgroundTileSpriteExtended(
-        this,
-        this.farthestForest.mappingKey,
-        this.farthestForest.moveSpeed,
-        this.farthestForest.outerScale,
-        this.farthestForest.innerScale,
-        this.farthestForest.depth,
-        this.farthestForest.origin,
-        this.farthestForest.screenOffsetMult
-      );
+    if (!this.farthestForest.tileSprite) {
+      this.farthestForest.tileSprite =
+        new BackgroundTileSpriteExtended(
+          this,
+          this.farthestForest.mappingKey,
+          this.farthestForest.moveSpeed,
+          this.farthestForest.outerScale,
+          this.farthestForest.innerScale,
+          this.farthestForest.depth,
+          this.farthestForest.origin,
+          this.farthestForest.screenOffsetMult
+        );
     }
   }
 
@@ -464,9 +481,13 @@ export default class SceneMenu extends Phaser.Scene {
 
     this.vehicles.selectedVehicle = vehicle;
 
-    this.traffic.clearTraffic();
+    this.traffic.object?.clearTraffic();
 
-    this.traffic.generateVehicle(this.vehicles.selectedVehicle, 0, [], this.map.depth, false);
+    this.traffic.object?.generateVehicle(
+      this.vehicles.selectedVehicle, 
+      0, 
+      []
+    );
   }
 
   private rescaleVehicleSelection(vehicle: VehicleType, mappingKey: string) {
@@ -479,7 +500,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.vehicles.mapping[mappingKey].setDepth((this.vehicles.depth ?? 1) + 1);
   }
 
-  //#region Handlers
+//#region Handlers
   private handleClickVehicle(vehicle: VehicleType, mappingKey: string): void {
     this.selectVehicle(vehicle, mappingKey);
   }
@@ -513,10 +534,10 @@ export default class SceneMenu extends Phaser.Scene {
 
     this.scene.start('PreloadLevel', new SettingsModel(
       this.sys.game.device.os.desktop ? DeviceType.DESKTOP : DeviceType.MOBILE,
+
       this.controls.selectedControls,
       this.vehicles.selectedVehicle
-    )
-    );
+    ));
   }
 
   private handleHoverLRControlArrows(context: any) {

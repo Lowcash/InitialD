@@ -15,7 +15,7 @@ class SourceModel {
     spriteArrowsSelect: SourceMapping;
     spriteArrowsPlay: SourceMapping;
     spriteStart: SourceMapping;
-    spriteGameOverStart: SourceMapping;
+    imageGameOver: SourceMapping;
     soundButton: SourceMapping;
     imageRoadStraight0: SourceMapping;
     imageRoadStraight1: SourceMapping;
@@ -64,9 +64,9 @@ export const sourceModel: SourceModel = {
         mappingKey: 'sprite_sheet_start',
         sourcePath: 'assets/img/buttons/start.png'
     },
-    spriteGameOverStart: {
-        mappingKey: 'sprite_game_over_start',
-        sourcePath: 'assets/img/buttons/game_over_start.png'
+    imageGameOver: {
+        mappingKey: 'image_game_over',
+        sourcePath: 'assets/img/buttons/game_over.png'
     },
     soundButton: {
         mappingKey: 'sound_button',
