@@ -22,10 +22,10 @@ export default class PreloadLevel extends Phaser.Scene {
     this.load.image(sourceModel.imageClouds.mappingKey, sourceModel.imageClouds.sourcePath);
 
     this.load.spritesheet(
-      sourceModel.spriteArrows.mappingKey,
-      sourceModel.spriteArrows.sourcePath,
+      sourceModel.spriteArrowsPlay.mappingKey,
+      sourceModel.spriteArrowsPlay.sourcePath,
       {
-        frameWidth: 190,
+        frameWidth: 84,
         frameHeight: 76
       }
     );
@@ -36,6 +36,15 @@ export default class PreloadLevel extends Phaser.Scene {
       {
         frameWidth: 191,
         frameHeight: 69
+      }
+    );
+    
+    this.load.spritesheet(
+      sourceModel.spriteGameOverStart.mappingKey,
+      sourceModel.spriteGameOverStart.sourcePath,
+      {
+        frameWidth: 319,
+        frameHeight: 68
       }
     );
 

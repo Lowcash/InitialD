@@ -1,4 +1,4 @@
-import { Range, Direction } from '../_common/common';
+import { Range, Direction, LayerIDX } from '../_common/common';
 import TypeGuardHelper from '../_common/typeGuardHelper';
 import { SpriteMapping } from '../_common/mappingHelper';
 
@@ -39,7 +39,7 @@ export default class Traffic {
         this.explosion.sprite = 
             this.scene.physics.add.sprite(0, 0, this.explosion.mappingKey)
                 .setScale(6.5)
-                .setDepth(5)
+                .setDepth(LayerIDX.GUI)
                 .setOrigin(0.5, 0.75)
                 .setVisible(false);
 
@@ -78,7 +78,7 @@ export default class Traffic {
         }
     }
 
-    public generateVehicle(vehicleType: VehicleType, posX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], istakeLane: boolean = true): Vehicle {
+    public generateVehicle(vehicleType: VehicleType, posX: Range | number, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], depthAdd: number = 0, istakeLane: boolean = true): Vehicle {
         const _posX = TypeGuardHelper.isRange(posX) ?
             this.map.getRandomRoadIdx(posX.from, posX.to) :
             posX;
@@ -99,9 +99,8 @@ export default class Traffic {
             `${vehicleType.toString()}/${Direction.FRONT.toString()}`
         )
             .setScale(this.map.getPerspectiveScale(_posX, _posY))
-            .setOrigin(0.5, 1.0)
-            //.setDepth(this.map.getNumRoadChunkLanes(_posX) - _posY);
-            .setDepth(999);
+            .setOrigin(0.0, 1.0)
+            .setDepth(depthAdd + this.map.getNumRoadChunkLanes(_posX) - _posY);
         
         const vehicle = new Vehicle(
             this.scene,
@@ -171,10 +170,8 @@ export default class Traffic {
 
                     vehiclesObject.stop();
 
-                    this.map.changeSpeed(1);
+                    this.scene.events.emit('onPlayerCollided', id );
                 }
-                
-                console.log('GameOver');
             }
         }
     }
@@ -194,7 +191,8 @@ export default class Traffic {
                     from: this.map.getNumRoadChunks() - 2, 
                     to: this.map.getNumRoadChunks() - 1
                 },
-                [ this.player.getSprite() ]
+                [ this.player.getSprite() ],
+                9
             );
         }
     }

@@ -15,8 +15,8 @@ export default class PreloadMenu extends Phaser.Scene {
         this.load.image(sourceModel.imageClouds.mappingKey, sourceModel.imageClouds.sourcePath);
 
         this.load.spritesheet(
-            sourceModel.spriteArrows.mappingKey,
-            sourceModel.spriteArrows.sourcePath,
+            sourceModel.spriteArrowsSelect.mappingKey,
+            sourceModel.spriteArrowsSelect.sourcePath,
             {
                 frameWidth: 190,
                 frameHeight: 76

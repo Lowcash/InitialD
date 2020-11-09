@@ -44,10 +44,10 @@ export const roadChunks: { [id: string]: RoadChunkProperties } = {
     [ChunkType.ROAD_STRAIGHT_0.toString()]: new RoadChunkProperties(
         ChunkType.ROAD_STRAIGHT_0, 
         [
-            new LaneProperties(0, 5, 1.00),
-            new LaneProperties(1, 13, 0.93),
-            new LaneProperties(2, 21, 0.86),
-            new LaneProperties(3, 29, 0.79)
+            new LaneProperties(0, 110, 1.00),
+            new LaneProperties(1, 155, 0.93),
+            new LaneProperties(2, 200, 0.86),
+            new LaneProperties(3, 245, 0.79)
         ], 
         [
             ChunkType.ROAD_STRAIGHT_0, ChunkType.ROAD_STRAIGHT_0, ChunkType.ROAD_STRAIGHT_0, ChunkType.ROAD_STRAIGHT_1, ChunkType.ROAD_STRAIGHT_1
@@ -56,10 +56,10 @@ export const roadChunks: { [id: string]: RoadChunkProperties } = {
     [ChunkType.ROAD_STRAIGHT_1.toString()]: new RoadChunkProperties(
         ChunkType.ROAD_STRAIGHT_1, 
         [
-            new LaneProperties(0, 5, 1.00),
-            new LaneProperties(1, 13, 0.93),
-            new LaneProperties(2, 21, 0.86),
-            new LaneProperties(3, 29, 0.79)
+            new LaneProperties(0, 110, 1.00),
+            new LaneProperties(1, 155, 0.93),
+            new LaneProperties(2, 200, 0.86),
+            new LaneProperties(3, 245, 0.79)
         ], 
         [
             ChunkType.ROAD_STRAIGHT_1, ChunkType.ROAD_STRAIGHT_1, ChunkType.ROAD_STRAIGHT_1, 

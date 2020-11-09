@@ -3,6 +3,10 @@ import { VehicleType } from '../objects/traffic/vehicle'
 export enum DeviceType { DESKTOP = 0, MOBILE };
 export enum Controls { LEFT_RIGHT = 0, UP_DOWN };
 
+export enum GameState { GAME_OVER = 0, PLAY = 1 };
+
+export enum ControlState { NOT_SELECTED = 2, PENDING = 1, SELECTED = 0 };
+
 export class SettingsModel {
     deviceType: DeviceType;
     controls: Controls;

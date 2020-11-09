@@ -12,8 +12,10 @@ class SourceModel {
     imageHill: SourceMapping;
     imageClouds: SourceMapping;
     imageForest: SourceMapping;
-    spriteArrows: SourceMapping;
+    spriteArrowsSelect: SourceMapping;
+    spriteArrowsPlay: SourceMapping;
     spriteStart: SourceMapping;
+    spriteGameOverStart: SourceMapping;
     soundButton: SourceMapping;
     imageRoadStraight0: SourceMapping;
     imageRoadStraight1: SourceMapping;
@@ -50,13 +52,21 @@ export const sourceModel: SourceModel = {
         mappingKey: 'image_forest',
         sourcePath: 'assets/img/background/forest.png'
     },
-    spriteArrows: {
-        mappingKey: 'sprite_arrows',
-        sourcePath: 'assets/img/buttons/arrows.png'
+    spriteArrowsSelect: {
+        mappingKey: 'sprite_arrows_select',
+        sourcePath: 'assets/img/buttons/arrows_select.png'
+    },
+    spriteArrowsPlay: {
+        mappingKey: 'sprite_arrows_play',
+        sourcePath: 'assets/img/buttons/arrows_play.png'
     },
     spriteStart: {
         mappingKey: 'sprite_sheet_start',
         sourcePath: 'assets/img/buttons/start.png'
+    },
+    spriteGameOverStart: {
+        mappingKey: 'sprite_game_over_start',
+        sourcePath: 'assets/img/buttons/game_over_start.png'
     },
     soundButton: {
         mappingKey: 'sound_button',

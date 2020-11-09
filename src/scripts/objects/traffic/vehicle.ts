@@ -1,4 +1,4 @@
-import Common, { Range, Direction } from '../_common/common';
+import Common, { Range, Direction } from '../_common/common'
 
 import ICollidable from '../interfaces/ICollidable'
 import IMovable from '../interfaces/IMovable'
@@ -190,7 +190,7 @@ export default class Vehicle implements ICollidable, IMovable {
         
         this.sprite
             .setVelocityY(0)
-            .setDepth(this.map.getNumRoadChunkLanes(this.gridPos.x) - this.gridPos.y)
+            .setDepth(9 + this.map.getNumRoadChunkLanes(this.gridPos.x) - this.gridPos.y)
             .anims.play(`${this.type.toString()}_${Direction.FRONT.toString()}`, true);
 
         this.isTurning = false;

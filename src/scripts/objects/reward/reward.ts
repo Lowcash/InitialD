@@ -14,7 +14,6 @@ export default class Reward implements IMovable {
     private readonly player: Vehicle;
 
     private readonly depthLayer: number;
-    private readonly scale: number;
 
     private readonly coin: {
         soundKey: string;
@@ -45,13 +44,12 @@ export default class Reward implements IMovable {
     
     speed: number = 0;
 
-    constructor(scene: Phaser.Scene, map: Map, player: Vehicle, depthLayer: number = 0, scale: number = 1, numCoinsToGenerate: number = 0) {
+    constructor(scene: Phaser.Scene, map: Map, player: Vehicle, depthLayer: number = 0, numCoinsToGenerate: number = 0) {
         this.scene = scene;
         this.map = map;
         this.player = player;
 
         this.depthLayer = depthLayer;
-        this.scale = scale;
 
         this.coins.sound = this.scene.sound.add(this.coin.soundKey, {} );
 
@@ -95,8 +93,7 @@ export default class Reward implements IMovable {
                 this.coin.mappingKey
             )
              .setOrigin(0.5, 1.0)
-             .setScale(this.scale)
-             .setDepth(this.depthLayer);
+             .setDepth(999);
         
         this.coin.sprite?.anims.play(this.coin.key, true);
         
@@ -168,9 +165,9 @@ export default class Reward implements IMovable {
         this.generateRandomCoins(
             1, 
             { 
-                from: 8, 
-                to: this.map.getNumRoadChunks() - 1
+                from: this.map.getNumRoadChunks() - 2,
+                to: this.map.getNumRoadChunks() - 1 
             }
-        );
+        ); 
     }
 };

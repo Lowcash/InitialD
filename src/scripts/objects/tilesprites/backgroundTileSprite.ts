@@ -4,7 +4,7 @@ import { Mapping } from '../_common/mappingHelper';
 export interface BackgroundTileSpriteMapping extends Mapping {
     tileSprite?: BackgroundTileSprite;
 
-    bottomOffsetMult?: number;
+    screenOffsetMult?: Phaser.Math.Vector2;
     
     origin?: Phaser.Math.Vector2;
     outerScale?: number;
@@ -18,11 +18,11 @@ export interface BackgroundTileSpriteMapping extends Mapping {
 export default class BackgroundTileSprite extends Phaser.GameObjects.TileSprite implements IMovable {
     public speed: number;
 
-    constructor(scene: Phaser.Scene, mappingKey: string, speed: number, outerScale?: number, innerScale?: number, depth?: number, origin?: Phaser.Math.Vector2, bottomOffsetMult: number = 1.0) {
+    constructor(scene: Phaser.Scene, mappingKey: string, speed: number, outerScale?: number, innerScale?: number, depth?: number, origin?: Phaser.Math.Vector2, screenOffsetMult?: Phaser.Math.Vector2) {
         super(
             scene, 
-            scene.cameras.main.centerX, 
-            scene.cameras.main.height * bottomOffsetMult,
+            scene.cameras.main.width * (screenOffsetMult?.x ?? (origin?.x ?? .5)), 
+            scene.cameras.main.height * (screenOffsetMult?.y ?? (origin?.y ?? .5)),
             0,
             0,
             mappingKey
