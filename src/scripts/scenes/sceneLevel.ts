@@ -146,9 +146,12 @@ export default class SceneLevel extends Phaser.Scene {
     object?: Traffic;
 
     player?: Vehicle;
+    playerStartOffset: Phaser.Math.Vector2;
 
     depth: number;
   } = {
+      playerStartOffset: new Phaser.Math.Vector2(50, 0),
+
       depth: this.map.depth
     };
 
@@ -195,6 +198,8 @@ export default class SceneLevel extends Phaser.Scene {
         this.map.object?.changeSpeed(this.map.object.getSpeed() - 0.1);
     }, 100);
 
+    this.traffic.player?.setEnableTurn(true);
+
     this.isGameOver = false;
   }
 
@@ -238,6 +243,8 @@ export default class SceneLevel extends Phaser.Scene {
 
       this.stop(0.1);
 
+      this.traffic.player?.setEnableTurn(false);
+
       if (this.reward.object) {
         const earnedPoints = this.reward.object.getEarnedPoints();
 
@@ -254,7 +261,7 @@ export default class SceneLevel extends Phaser.Scene {
     this.map.object?.changeSpeed(2);
 
     if (this.map.object) {
-      let mapSpeed = this.map.object.getSpeed();
+      let mapSpeed = -1;
 
       for (; (mapSpeed = this.map.object?.getSpeed()) > 0;) {
         this.map.object.changeSpeed(mapSpeed - bySpeed);
@@ -455,7 +462,10 @@ export default class SceneLevel extends Phaser.Scene {
     );
 
     if (highScore) {
-      this.reward.highScoreHUD.updateScore(JSON.parse(highScore) as number);
+      const highScoreParsed = JSON.parse(highScore) as number;
+
+      this.prevHighScore = highScoreParsed;
+      this.reward.highScoreHUD.updateScore(highScoreParsed);
     } else {
       localStorage.setItem('HighScore', JSON.stringify(this.prevHighScore))
     }
@@ -468,7 +478,9 @@ export default class SceneLevel extends Phaser.Scene {
       this.traffic.player = this.traffic.object.generateVehicle(
         this.menuSettings.vehicle,
         0,
-        []
+        this.traffic.playerStartOffset,
+        [],
+        false
       );
 
       this.traffic.object.attachPlayer(this.traffic.player);
@@ -488,7 +500,9 @@ export default class SceneLevel extends Phaser.Scene {
       this.traffic.player = this.traffic.object.generateVehicle(
         this.menuSettings.vehicle,
         0,
-        []
+        this.traffic.playerStartOffset,
+        [],
+        false
       );
 
       this.traffic.object.attachPlayer(this.traffic.player);

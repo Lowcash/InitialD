@@ -1,7 +1,7 @@
 {
 	"textures": [
 		{
-			"image": "atlas_mapping.png",
+			"image": "atlas_vehicles.png",
 			"format": "RGBA8888",
 			"size": {
 				"w": 540,
@@ -645,6 +645,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:e2f4c33a4d2efa5efa5d96521621cf23:93fe3f092a0d41eda4f5581cf047e8a8:a6260a949c66d953a26d89e5aa0a4e74$"
+		"smartupdate": "$TexturePacker:SmartUpdate:09546c6c9c7ccf33fc4d1c4839ca1e67:93fe3f092a0d41eda4f5581cf047e8a8:7922462965e2b044e178f1ddacec2f55$"
 	}
 }

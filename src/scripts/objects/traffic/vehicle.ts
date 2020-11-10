@@ -55,6 +55,8 @@ export default class Vehicle implements ICollidable, IMovable {
 
     private readonly gridPos: Phaser.Math.Vector2;
 
+    private readonly depthLayer: number;
+
     private mapSpeed: number;
 
     private type: VehicleType;
@@ -62,10 +64,11 @@ export default class Vehicle implements ICollidable, IMovable {
     
     private isAlive: boolean = true;
     private isTurning: boolean = false;
+    private canTurn: boolean = true;
     
     speed: number;
 
-    constructor(scene: Phaser.Scene, map: Map, id: string, sprite: Phaser.Physics.Arcade.Sprite, gridPos: Phaser.Math.Vector2, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], type: VehicleType, speed: number, mapSpeed: number, turningStrength: number) {
+    constructor(scene: Phaser.Scene, map: Map, id: string, sprite: Phaser.Physics.Arcade.Sprite, gridPos: Phaser.Math.Vector2, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], depth: number, type: VehicleType, speed: number, mapSpeed: number, turningStrength: number) {
         this.scene = scene;
         this.map = map;
 
@@ -73,6 +76,8 @@ export default class Vehicle implements ICollidable, IMovable {
         this.sprite = sprite;
 
         this.gridPos = gridPos;
+
+        this.depthLayer = depth;
 
         this.type = type;
         this.speed = speed;
@@ -119,12 +124,17 @@ export default class Vehicle implements ICollidable, IMovable {
         this.sprite.setPosition(this.sprite.x + this.mapSpeed + this.speed, this.sprite.y);
     }
 
+    public setEnableTurn(enableTurn: boolean): void {
+        this.canTurn = enableTurn;
+    }
+
     public stop(): void {
         this.speed = 0;
     }
 
     public turnLeft() {
-        if(!this.isTurning && this.gridPos.y < this.map.getNumRoadChunkLanes(this.gridPos.x) - 1) {
+        if(this.canTurn && !this.isTurning && 
+            this.gridPos.y < this.map.getNumRoadChunkLanes(this.gridPos.x) - 1) {
             this.turn(Direction.LEFT, this.turningStrength);
 
             this.gridPos.y++;
@@ -134,7 +144,8 @@ export default class Vehicle implements ICollidable, IMovable {
     }
 
     public turnRight() {
-        if(!this.isTurning && this.gridPos.y > 0) {
+        if(this.canTurn && !this.isTurning &&
+             this.gridPos.y > 0) {
             this.turn(Direction.RIGHT, this.turningStrength);
 
             this.gridPos.y--;
@@ -190,7 +201,7 @@ export default class Vehicle implements ICollidable, IMovable {
         
         this.sprite
             .setVelocityY(0)
-            .setDepth(9 + this.map.getNumRoadChunkLanes(this.gridPos.x) - this.gridPos.y)
+            .setDepth( this.depthLayer + this.map.getNumRoadChunkLanes(this.gridPos.x) - this.gridPos.y)
             .anims.play(`${this.type.toString()}_${Direction.FRONT.toString()}`, true);
 
         this.isTurning = false;

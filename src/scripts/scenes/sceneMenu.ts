@@ -156,8 +156,12 @@ export default class SceneMenu extends Phaser.Scene {
   private readonly traffic: {
     object?: Traffic;
 
+    playerStartOffset: Phaser.Math.Vector2;
+
     depth: number;
   } = {
+    playerStartOffset: new Phaser.Math.Vector2(50, 0),
+
     depth: this.map.depth
   };
 
@@ -422,15 +426,17 @@ export default class SceneMenu extends Phaser.Scene {
     this.vehicles.group?.add(vehiclesText);
 
     const offset = new Phaser.Math.Vector2(this.vehicles.textPadding, 3.0 * vehiclesText.height);
-
-    this.addVehicleToGroupAsGrid(VehicleType.RX_7_FC, Direction.RIGHT, new Phaser.Math.Vector2(0, 1), offset);
-    this.addVehicleToGroupAsGrid(VehicleType.RX_7_FD, Direction.RIGHT, new Phaser.Math.Vector2(1, 1), offset);
-    this.addVehicleToGroupAsGrid(VehicleType.EVO_3, Direction.RIGHT, new Phaser.Math.Vector2(2, 1), offset);
-    this.addVehicleToGroupAsGrid(VehicleType.AE_86_LEVIN, Direction.RIGHT, new Phaser.Math.Vector2(3, 1), offset);
+    
     this.addVehicleToGroupAsGrid(VehicleType.AE_86_TRUENO, Direction.RIGHT, new Phaser.Math.Vector2(0, 0), offset);
-    this.addVehicleToGroupAsGrid(VehicleType.S_13, Direction.RIGHT, new Phaser.Math.Vector2(1, 0), offset);
-    this.addVehicleToGroupAsGrid(VehicleType._180_SX, Direction.RIGHT, new Phaser.Math.Vector2(2, 0), offset);
-    this.addVehicleToGroupAsGrid(VehicleType.EVO_4, Direction.RIGHT, new Phaser.Math.Vector2(3, 0), offset);
+    this.addVehicleToGroupAsGrid(VehicleType.AE_86_LEVIN, Direction.RIGHT, new Phaser.Math.Vector2(1, 0), offset);
+    this.addVehicleToGroupAsGrid(VehicleType.RX_7_FC, Direction.RIGHT, new Phaser.Math.Vector2(2, 0), offset);
+    this.addVehicleToGroupAsGrid(VehicleType.RX_7_FD, Direction.RIGHT, new Phaser.Math.Vector2(3, 0), offset);
+    this.addVehicleToGroupAsGrid(VehicleType.S_13, Direction.RIGHT, new Phaser.Math.Vector2(0, 1), offset);
+    this.addVehicleToGroupAsGrid(VehicleType.CIVIC, Direction.RIGHT, new Phaser.Math.Vector2(1, 1), offset);
+    this.addVehicleToGroupAsGrid(VehicleType._180_SX, Direction.RIGHT, new Phaser.Math.Vector2(2, 1), offset);
+    this.addVehicleToGroupAsGrid(VehicleType.EVO_3, Direction.RIGHT, new Phaser.Math.Vector2(3, 1), offset);
+    this.addVehicleToGroupAsGrid(VehicleType.R_32, Direction.RIGHT, new Phaser.Math.Vector2(0, 2), offset);
+    this.addVehicleToGroupAsGrid(VehicleType.EVO_4, Direction.RIGHT, new Phaser.Math.Vector2(1, 2), offset);
 
     this.vehicles.group?.incXY(
       this.cameras.main.width * this.vehicles.screenOffsetMult!.x ?? 1,
@@ -487,8 +493,10 @@ export default class SceneMenu extends Phaser.Scene {
 
     this.traffic.object?.generateVehicle(
       this.vehicles.selectedVehicle, 
-      0, 
-      []
+      0,
+      this.traffic.playerStartOffset,
+      [],
+      false
     );
   }
 

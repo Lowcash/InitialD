@@ -95,10 +95,8 @@ export default class Reward implements IMovable {
         this.player = player;
 
         const playerSprite = this.player.getSprite();
-        
-        for (const o of Object.values(this.coins.objectMapper)) {
-            o.registerCollision(playerSprite);
-        }
+
+        Object.values(this.coins.objectMapper).map(o => o.registerCollision(playerSprite));
     }
 
     public generateCoin(gridPosX: Range | number): void {
@@ -184,7 +182,10 @@ export default class Reward implements IMovable {
                 
                 this.scene.events.emit('onScoreChanged', this.earnedPoints, coinObject.getRewardPoints());
 
+                // You can destroy a coin that has already been taken/collected
                 this.coins.objectMapper[id].destroyCoin();
+
+                this.recreateCoin(id);
 
                 console.log(`Earned points: ${this.earnedPoints}`);
             }
@@ -192,8 +193,14 @@ export default class Reward implements IMovable {
     }
 
     private handleCoinDestroyed(id: string): void {
-        console.log(`Coin #${id} is history!`);
+        if (this.coins.objectMapper[id]) {
+            this.recreateCoin(id);
 
+            console.log(`Coin #${id} is history!`);
+        }
+    }
+
+    private recreateCoin(id: string): void {
         delete this.coins.objectMapper[id];
         delete this.coins.spriteMapper[id];
 

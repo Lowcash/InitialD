@@ -82,8 +82,8 @@ export const sourceModel: SourceModel = {
     },
     atlasVehicle: {
         mappingKey: 'atlas_vehicles',
-        sourcePath: 'assets/img/vehicles/atlas_mapping.png',
-        sourceMapperPath: 'assets/img/vehicles/atlas_mapping.json'
+        sourcePath: 'assets/img/vehicles/atlas_vehicles.png',
+        sourceMapperPath: 'assets/img/vehicles/atlas_vehicles.json'
     },
     spriteExplosion: {
         mappingKey: 'sprite_explosion',
