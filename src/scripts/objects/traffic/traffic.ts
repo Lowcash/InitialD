@@ -68,13 +68,7 @@ export default class Traffic {
         }
 
         // -------------------------- Init availiable lanes -------------------------- //
-        const numLastChunkLanes = this.map.getNumRoadChunkLanes(
-            this.map.getNumRoadChunks() - 1
-        );
-
-        for (let i = 0; i < numLastChunkLanes; ++i) {
-            this.availableLanes.push(i);
-        }
+        this.initAvailiableLanes();
 
         // ------------------------------ Init vehicles ------------------------------ //
         Object.values(VehicleType).map(v => this.initVehicle(v));
@@ -113,31 +107,18 @@ export default class Traffic {
             o.destroy()
         );
         
-        this.availableLanes = [];
-        
-        const numLastChunkLanes = this.map.getNumRoadChunkLanes(
-            this.map.getNumRoadChunks() - 1
-        );
-        
-        for (let i = 0; i < numLastChunkLanes; ++i) {
-            this.availableLanes.push(i);
-        }
+        this.initAvailiableLanes();
 
         this.vehicles.objectMapper = {};
         this.vehicles.spriteMapper = {};
     }
 
-    public generateVehicle(vehicleType: VehicleType, gridPosX: Range | number, coordsOffset: Phaser.Math.Vector2, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], takeLane: boolean = true): Vehicle {
+    public generateVehicle(vehicleType: VehicleType, gridPosX: Range | number, coordsOffset: Phaser.Math.Vector2, collideWith: Array<Phaser.Physics.Arcade.Sprite> = [], isTakeLane: boolean = true): Vehicle {
         const _posX = TypeGuardHelper.isRange(gridPosX) ?
             this.map.getRandomRoadIdx(gridPosX.from, gridPosX.to) :
             gridPosX;
 
-        const availableLaneIdx = Phaser.Math.Between(0, this.availableLanes.length - 1);
-        const _posY = this.availableLanes[availableLaneIdx];
-
-        if (takeLane) {
-            this.availableLanes.splice(availableLaneIdx, 1);
-        }
+        const _posY = this.getAvailiableLane(isTakeLane);
 
         //const _posY = this.map.getRandomLaneIdx(_posX);
 
@@ -190,10 +171,33 @@ export default class Traffic {
         }
     }
 
+    private getAvailiableLane(isRemoveLane: boolean = true): number {
+        const availableLaneIdx = Phaser.Math.Between(0, this.availableLanes.length - 1);
+        const lane = this.availableLanes[availableLaneIdx];
+
+        if (isRemoveLane) {
+            this.availableLanes.splice(availableLaneIdx, 1);
+        }
+
+        return lane;
+    }
+
     private initVehicle(vehicleType: VehicleType): void {
         this.initVehicleAnims(vehicleType, Direction.FRONT);
         this.initVehicleAnims(vehicleType, Direction.LEFT);
         this.initVehicleAnims(vehicleType, Direction.RIGHT);
+    }
+
+    private initAvailiableLanes(): void {
+        this.availableLanes = [];
+
+        const numLastChunkLanes = this.map.getNumRoadChunkLanes(
+            this.map.getNumRoadChunks() - 1
+        );
+        
+        for (let i = 0; i < numLastChunkLanes; ++i) {
+            this.availableLanes.push(i);
+        }
     }
 
     private initVehicleAnims(vehicleType: VehicleType, direction: Direction) {
@@ -235,6 +239,7 @@ export default class Traffic {
     }
 
     private handleVehicleDestroyed(id: string): void {
+        // Destroy vehicles that are out off the map
         if (this.vehicles.objectMapper[id]) {
             console.log(`Vehicle #${id} is history!`);
 
@@ -243,6 +248,7 @@ export default class Traffic {
             delete this.vehicles.objectMapper[id];
             delete this.vehicles.spriteMapper[id];
 
+            // After destroyed, create a new vehicle
             if (this.player) {
                 this.generateVehicle(
                     Vehicle.getRandomVehicle().type,

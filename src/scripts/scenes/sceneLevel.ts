@@ -1,12 +1,9 @@
-import fs from 'fs'
-
 import { sourceModel } from '../models/source'
 import Common from '../objects/_common/common'
 import { Controls, ControlState, DeviceType, SettingsModel } from '../models/settings'
-import TypeGuardHelper from '../objects/_common/typeGuardHelper';
 
 import BasicButton, { BasicButtonMapping } from '../objects/buttons/basicButton';
-import BackgroundTileSprite, { BackgroundTileSpriteMapping } from '../objects/tilesprites/backgroundTileSprite'
+import { BackgroundTileSpriteMapping } from '../objects/tilesprites/backgroundTileSprite'
 import { HUDFrameSettings } from '../objects/HUD';
 
 import Map from '../objects/map/map'
@@ -114,12 +111,23 @@ export default class SceneLevel extends Phaser.Scene {
 
     moveSpeed: number;
 
+    speedUp: {
+      func?: any;
+      byValue: number;
+      eachMillisec: number;
+    };
+
     depth: number;
   } = {
       depth: 9,
       screenOffsetMult: new Phaser.Math.Vector2(0, 1),
       startNumChunks: 8,
-      moveSpeed: -1.0
+      moveSpeed: -1.0,
+
+      speedUp: {
+        byValue: 0.1,
+        eachMillisec: 100
+      }
     };
 
   private readonly reward: {
@@ -130,6 +138,8 @@ export default class SceneLevel extends Phaser.Scene {
     startNumCoins: number;
     zeroPadding: number;
 
+    prevHighScore: number;
+
     depth: number;
   } & HUDFrameSettings = {
       fontSize: 38,
@@ -138,6 +148,8 @@ export default class SceneLevel extends Phaser.Scene {
 
       startNumCoins: 5,
       zeroPadding: 6,
+
+      prevHighScore: 0,
 
       depth: this.map.depth
     };
@@ -159,8 +171,6 @@ export default class SceneLevel extends Phaser.Scene {
 
   private cursors?: Phaser.Types.Input.Keyboard.CursorKeys;
 
-  private prevHighScore: number = 0;
-  private speedUpFunction: any;
   private isGameOver: boolean = false;
 
   constructor() {
@@ -182,6 +192,8 @@ export default class SceneLevel extends Phaser.Scene {
   }
 
   private prepareObjects(): void {
+    this.isGameOver = false;
+
     this.prepareBackground();
     this.prepareMap();
     this.prepareTraffic();
@@ -192,15 +204,14 @@ export default class SceneLevel extends Phaser.Scene {
       this.prepareControls();
     }
 
-    this.map.object?.changeSpeed(this.map.moveSpeed);
-
-    this.speedUpFunction = setInterval(() => {
-        this.map.object?.changeSpeed(this.map.object.getSpeed() - 0.1);
-    }, 100);
-
     this.traffic.player?.setEnableTurn(true);
 
-    this.isGameOver = false;
+    this.map.object?.changeSpeed(this.map.moveSpeed);
+
+    // Start speeding up the map
+    this.map.speedUp.func = setInterval(() => {
+      this.map.object?.changeSpeed(this.map.object.getSpeed() - this.map.speedUp.byValue);
+    }, this.map.speedUp.eachMillisec);
   }
 
   public update(): void {
@@ -236,37 +247,25 @@ export default class SceneLevel extends Phaser.Scene {
     if (!this.isGameOver) {
       this.isGameOver = true;
 
-      clearInterval(this.speedUpFunction);
+      // Interrupt speeding up the map
+      clearInterval(this.map.speedUp.func);
 
-      this.start.button?.setVisible(true);
-      this.gameover.button?.setVisible(true);
-
-      this.stop(0.1);
+      this.map?.object?.stop(this.map?.speedUp.byValue);
 
       this.traffic.player?.setEnableTurn(false);
+
+      // Show game over
+      this.start.button?.setVisible(true);
+      this.gameover.button?.setVisible(true);
 
       if (this.reward.object) {
         const earnedPoints = this.reward.object.getEarnedPoints();
 
-        if (earnedPoints > this.prevHighScore) {
+        if (earnedPoints > this.reward.prevHighScore) {
           localStorage.setItem('HighScore', JSON.stringify(earnedPoints));
 
           this.reward.highScoreHUD?.updateScore(earnedPoints);
         }
-      }
-    }
-  }
-
-  private async stop(bySpeed: number): Promise<void> {
-    this.map.object?.changeSpeed(2);
-
-    if (this.map.object) {
-      let mapSpeed = -1;
-
-      for (; (mapSpeed = this.map.object?.getSpeed()) > 0;) {
-        this.map.object.changeSpeed(mapSpeed - bySpeed);
-
-        await Common.delay(60);
       }
     }
   }
@@ -365,52 +364,52 @@ export default class SceneLevel extends Phaser.Scene {
     if (!(this.controls.lButton.button && this.controls.rButton.button)) {
       const arrowTex = this.textures.get(sourceModel.spriteArrowsPlay.mappingKey);
 
-    const arrowWidth = arrowTex.getSourceImage().width / arrowTex.frameTotal;
+      const arrowWidth = arrowTex.getSourceImage().width / arrowTex.frameTotal;
 
-    this.controls.lButton.button = new BasicButton(
-      this,
-      new Phaser.Math.Vector2(
-        this.menuSettings.controls === Controls.LEFT_RIGHT ? -arrowWidth : 0,
-        this.menuSettings.controls === Controls.UP_DOWN ? -arrowWidth : 0,
-      ),
-      sourceModel.spriteArrowsPlay.mappingKey,
-      this.controls.lButton.depth,
-      undefined,
-      this.menuSettings.controls === Controls.UP_DOWN ? 90 : undefined,
-      sourceModel.soundButton.mappingKey
-    );
+      this.controls.lButton.button = new BasicButton(
+        this,
+        new Phaser.Math.Vector2(
+          this.menuSettings.controls === Controls.LEFT_RIGHT ? -arrowWidth : 0,
+          this.menuSettings.controls === Controls.UP_DOWN ? -arrowWidth : 0,
+        ),
+        sourceModel.spriteArrowsPlay.mappingKey,
+        this.controls.lButton.depth,
+        undefined,
+        this.menuSettings.controls === Controls.UP_DOWN ? 90 : undefined,
+        sourceModel.soundButton.mappingKey
+      );
 
-    this.controls.rButton.button = new BasicButton(
-      this,
-      new Phaser.Math.Vector2(
-        this.menuSettings.controls === Controls.LEFT_RIGHT ? arrowWidth : 0,
-        this.menuSettings.controls === Controls.UP_DOWN ? arrowWidth : 0,
-      ),
-      sourceModel.spriteArrowsPlay.mappingKey,
-      this.controls.rButton.depth,
-      undefined,
-      this.menuSettings.controls === Controls.UP_DOWN ? -90 : 180,
-      sourceModel.soundButton.mappingKey
-    );
+      this.controls.rButton.button = new BasicButton(
+        this,
+        new Phaser.Math.Vector2(
+          this.menuSettings.controls === Controls.LEFT_RIGHT ? arrowWidth : 0,
+          this.menuSettings.controls === Controls.UP_DOWN ? arrowWidth : 0,
+        ),
+        sourceModel.spriteArrowsPlay.mappingKey,
+        this.controls.rButton.depth,
+        undefined,
+        this.menuSettings.controls === Controls.UP_DOWN ? -90 : 180,
+        sourceModel.soundButton.mappingKey
+      );
 
-    this.controls.group = this.add.group();
+      this.controls.group = this.add.group();
 
-    this.controls.group?.add(this.controls.lButton.button);
-    this.controls.group?.add(this.controls.rButton.button);
+      this.controls.group?.add(this.controls.lButton.button);
+      this.controls.group?.add(this.controls.rButton.button);
 
-    this.controls.group?.incXY(
-      this.cameras.main.width * this.controls.screenOffsetMult!.x ?? 1,
-      this.cameras.main.height * this.controls.screenOffsetMult!.y ?? 1
-    );
+      this.controls.group?.incXY(
+        this.cameras.main.width * this.controls.screenOffsetMult!.x ?? 1,
+        this.cameras.main.height * this.controls.screenOffsetMult!.y ?? 1
+      );
 
-    this.controls.lButton.button?.setFrame(ControlState.PENDING);
-    this.controls.rButton.button?.setFrame(ControlState.PENDING);
+      this.controls.lButton.button?.setFrame(ControlState.PENDING);
+      this.controls.rButton.button?.setFrame(ControlState.PENDING);
 
-    this.controls.lButton.button?.on('pointerdown', this.handlePressedLControlButton, this);
-    this.controls.rButton.button?.on('pointerdown', this.handlePressedRControlButton, this);
+      this.controls.lButton.button?.on('pointerdown', this.handlePressedLControlButton, this);
+      this.controls.rButton.button?.on('pointerdown', this.handlePressedRControlButton, this);
 
-    this.controls.lButton.button?.on('pointerup', this.handleUnPressedLControlButton, this);
-    this.controls.rButton.button?.on('pointerup', this.handleUnPressedRControlButton, this);
+      this.controls.lButton.button?.on('pointerup', this.handleUnPressedLControlButton, this);
+      this.controls.rButton.button?.on('pointerup', this.handleUnPressedRControlButton, this);
     }
   }
 
@@ -464,17 +463,17 @@ export default class SceneLevel extends Phaser.Scene {
     if (highScore) {
       const highScoreParsed = JSON.parse(highScore) as number;
 
-      this.prevHighScore = highScoreParsed;
+      this.reward.prevHighScore = highScoreParsed;
       this.reward.highScoreHUD.updateScore(highScoreParsed);
     } else {
-      localStorage.setItem('HighScore', JSON.stringify(this.prevHighScore))
+      localStorage.setItem('HighScore', JSON.stringify(this.reward.prevHighScore))
     }
   }
 
   private prepareTraffic(): void {
     if (this.traffic.object) {
       this.traffic.object.generateTraffic();
-      
+
       this.traffic.player = this.traffic.object.generateVehicle(
         this.menuSettings.vehicle,
         0,
@@ -494,7 +493,7 @@ export default class SceneLevel extends Phaser.Scene {
         this.map.object,
         this.traffic.depth
       );
-      
+
       this.traffic.object?.generateTraffic();
 
       this.traffic.player = this.traffic.object.generateVehicle(

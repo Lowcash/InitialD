@@ -3,7 +3,7 @@ import { Direction, LayerIDX } from '../objects/_common/common'
 import { Controls, ControlState, DeviceType, SettingsModel } from '../models/settings'
 
 import BasicButton, { BasicButtonMapping } from '../objects/buttons/basicButton';
-import BackgroundTileSprite, { BackgroundTileSpriteMapping } from '../objects/tilesprites/backgroundTileSprite'
+import { BackgroundTileSpriteMapping } from '../objects/tilesprites/backgroundTileSprite'
 import HUD, { HUDFrameSettings } from '../objects/HUD';
 
 import Map from '../objects/map/map'
@@ -152,7 +152,7 @@ export default class SceneMenu extends Phaser.Scene {
       startNumChunks: 8,
       moveSpeed: -1.0
     };
-  
+
   private readonly traffic: {
     object?: Traffic;
 
@@ -160,10 +160,10 @@ export default class SceneMenu extends Phaser.Scene {
 
     depth: number;
   } = {
-    playerStartOffset: new Phaser.Math.Vector2(50, 0),
+      playerStartOffset: new Phaser.Math.Vector2(50, 0),
 
-    depth: this.map.depth
-  };
+      depth: this.map.depth
+    };
 
   constructor() {
     super({ key: 'SceneMenu' })
@@ -187,7 +187,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.nearForest.tileSprite?.move();
     this.farForest.tileSprite?.move();
     this.farthestForest.tileSprite?.move();
-    
+
     this.map.object?.move();
   }
 
@@ -426,7 +426,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.vehicles.group?.add(vehiclesText);
 
     const offset = new Phaser.Math.Vector2(this.vehicles.textPadding, 3.0 * vehiclesText.height);
-    
+
     this.addVehicleToGroupAsGrid(VehicleType.AE_86_TRUENO, Direction.RIGHT, new Phaser.Math.Vector2(0, 0), offset);
     this.addVehicleToGroupAsGrid(VehicleType.AE_86_LEVIN, Direction.RIGHT, new Phaser.Math.Vector2(1, 0), offset);
     this.addVehicleToGroupAsGrid(VehicleType.RX_7_FC, Direction.RIGHT, new Phaser.Math.Vector2(2, 0), offset);
@@ -447,7 +447,7 @@ export default class SceneMenu extends Phaser.Scene {
 
   private addVehicleToGroupAsGrid(vehicle: VehicleType, direction: Direction, gridPos: Phaser.Math.Vector2, offset: Phaser.Math.Vector2): void {
     const mappingKey = `${vehicle.toString()}/${direction.toString()}`;
-    
+
     const vehicleTex = this.textures.get('atlas_vehicles').get(mappingKey);
 
     this.vehicles.mapping[mappingKey] = this.add.image(
@@ -492,7 +492,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.traffic.object?.clearTraffic();
 
     this.traffic.object?.generateVehicle(
-      this.vehicles.selectedVehicle, 
+      this.vehicles.selectedVehicle,
       0,
       this.traffic.playerStartOffset,
       [],
@@ -510,7 +510,7 @@ export default class SceneMenu extends Phaser.Scene {
     this.vehicles.mapping[mappingKey].setDepth((this.vehicles.depth ?? 1) + 1);
   }
 
-//#region Handlers
+  //#region Handlers
   private handleClickVehicle(vehicle: VehicleType, mappingKey: string): void {
     this.selectVehicle(vehicle, mappingKey);
   }

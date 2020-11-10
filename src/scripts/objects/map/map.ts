@@ -6,7 +6,7 @@ import { ChunkType, RoadChunkProperties, roadChunks } from './chunk'
 
 export default class Map implements IMovable {
     private readonly scene: Phaser.Scene;
-    
+
     private readonly depthLayer: number;
 
     private readonly road: {
@@ -15,11 +15,12 @@ export default class Map implements IMovable {
 
         group?: Phaser.Physics.Arcade.Group;
     } = {
-        images: [],
-        properties: []
-    };
+            images: [],
+            properties: []
+        };
 
     private readonly defaultMapOffset: Phaser.Math.Vector2;
+
     private mapOffset: Phaser.Math.Vector2;
 
     speed: number = 0;
@@ -30,6 +31,7 @@ export default class Map implements IMovable {
         this.depthLayer = depthLayer;
 
         this.defaultMapOffset = new Phaser.Math.Vector2(mapStartPos);
+
         this.mapOffset = mapStartPos;
 
         this.generateMap(numChunkToGenerate);
@@ -48,13 +50,27 @@ export default class Map implements IMovable {
     public move(): void {
         this.road.group?.incX(this.speed);
 
-        if (Common.isImgOutOfScreen(this.road.images[1], this.scene.cameras.main)) {
+        // If the map suddenly stops, there may be an empty/blank space
+        // Remove the first chunk after the second chunk is out off the screen
+        if (this.road.images.length > 1 && Common.isImgOutOfScreen(this.road.images[1], this.scene.cameras.main)) {
             this.shiftChunk();
 
             this.appendChunk(Map.getRandomRoadChunk());
 
             this.registerChunks();
         }
+    }
+
+    public async stop(bySpeed: number): Promise<void> {
+        this.changeSpeed(1);
+
+        for (; (this.speed) > 0;) {
+            this.changeSpeed(this.speed - bySpeed);
+
+            await Common.delay(60);
+        }
+
+        this.changeSpeed(0);
     }
 
     public changeSpeed(speed: number): void {
@@ -114,7 +130,7 @@ export default class Map implements IMovable {
         const firstRoadChunk = this.road.images.shift() as Phaser.GameObjects.Image;
 
         // this.road.group?.remove(firstRoadChunk);
-        
+
         firstRoadChunk.destroy();
 
         this.road.properties.shift();
@@ -130,17 +146,17 @@ export default class Map implements IMovable {
 
         this.road.images.push(
             this.scene.add.image(
-                this.mapOffset.x, 
-                this.mapOffset.y, 
+                this.mapOffset.x,
+                this.mapOffset.y,
                 chunk.type)
-                    .setOrigin(0.0, 1.0)
-                    .setDepth(this.depthLayer)
+                .setOrigin(0.0, 1.0)
+                .setDepth(this.depthLayer)
         );
-        
+
         this.road.properties.push(chunk);
     }
 
-    private registerChunks(): void{
+    private registerChunks(): void {
         this.road.group = this.scene.physics.add.group(this.road.images);
     }
 };
